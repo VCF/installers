@@ -68,3 +68,21 @@ function setTilda {
     ## sed with slashes: https://unix.stackexchange.com/a/39802
     echo "$txt" | sed "s|$in|$out|"
 }
+
+function relativePath {
+    ## Ok... this works great: https://unix.stackexchange.com/a/233882
+    ## ... but Mint 13 Maya has only realpath version 1.16, which does
+    ## not support the --relative-to parameter. So we're going to do
+    ## this with regular expressions, since I don't need to "back up"
+    ## (That is, one directory is a child of the other)
+    BaseDir=$1 # The 'higher level' directory
+    FullDir=$2 # The deeper directory (child of BaseDir)
+    ## Make sure directories ends with a slash
+    ##   Glob pattern matching: https://stackoverflow.com/a/44688520
+    [[ ! "$BaseDir" == *,/$,* ]] && BaseDir="$BaseDir"/
+    [[ ! "$FullDir" == *,/$,* ]] && FullDir="$FullDir"/
+    ## With realpath: realpath --relative-to="$BaseDir" "$FullDir"
+    rv=`echo "$FullDir" | sed "s|$BaseDir||"`
+    [[ "$rv" == "" ]] && rv='.'
+    echo "$rv"
+}

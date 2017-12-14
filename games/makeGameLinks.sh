@@ -41,7 +41,8 @@ LOCSHARE="$HOME/.local/share"
 STEAMCOM="$HOME/.steam/steam/steamapps/common"
 STEAMLOC="$LOCSHARE/Steam/SteamApps/common"
 CONFD="$HOME/.config"
-DOCDIR="$HOME/Documents";
+DOCDIR="$HOME/Documents"
+PROGRAMS="$HOME/Programs"
 
 ## Unclear:
 ## Super Tux Kart (.local/share is addons only)
@@ -73,6 +74,7 @@ mydirs=(
     "DroxOperative"               "$HOME/.local/DroxOperative"
     "DustForce"                   "$STEAMCOM/Dustforce/user"
     "EuroTruckSimulator2"         "$LOCSHARE/Euro Truck Simulator 2"
+    "Factorio"                    "$PROGRAMS/Factorio/game/saves"
     "FEZ"                         "$LOCSHARE/FEZ"
     "FarSky"                      "$HOME/.FarSky"
     "FullBore"                    "$HOME/.fullbore"

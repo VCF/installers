@@ -22,6 +22,7 @@ INSTROOT="/abyss/Installers"
 ## $INSTNAME can be found in directory $INSTDIR. If those variables
 ## are set and the installer is found:
 ##   * If it is a .sh it will be run
+##   * If a .bz2/bzup2 it will be extracted
 
 
 ## Copyright (C) 2017 Charles A. Tilford
@@ -44,15 +45,10 @@ LICENSE_GPL3="
 
 "
 
+## Load the general utility functions, held in the same repo
+my_dir="$(dirname "$0")"
+. "$my_dir/../../systemSetup/_util_functions.sh"
 
-function msg {
-    >&2 echo -e "\033[1;$1m$2\033[0m";
-
-}
-
-function set_title {
-    echo -ne "\033]0;$1\007";
-}
 
 # Testing the suffix of a file:
 # https://stackoverflow.com/a/965072
@@ -98,9 +94,12 @@ Game directory not found, expected at:
     fi
 
     ## Nothing found. Can we install?
-    [[ -z "$TRIEDINSTALL" ]] && installGame
+    if [[ ! -z "$TRIEDINSTALL" ]]
+       installGame
+       return
+    fi
     
-    # Nothing found in any of the paths:
+    ## Nothing found in any of the paths:
     msg 31 "
 Failed to find executable in $GAMEDIR
   Looked in: $PROGDIR
@@ -111,7 +110,7 @@ Failed to find executable in $GAMEDIR
 
 function installGame {
     TRIEDINSTALL="CHECKED"
-    if [[ -z "$INSTDIR" || -z "$INSTNAME" ]]; then
+    if [[ -z "$INSTNAME" ]]; then
         ## No information on where to find installer
         msg "31" "
 No guidance given on where to find installer
@@ -121,18 +120,41 @@ No guidance given on where to find installer
         return
     fi
     
-    installer=`ls -1t "$INSTROOT"/"$INSTDIR"/$INSTNAME | head -n1`
+    ## Check first to see if the installer is in Downloads or ToFile;
+    ## If so, use one of those. 
+    TryDir[0]="$HOME/Downloads"
+    TryDir[1]="$HOME/ToFile"
+    if [[ ! -z "$INSTDIR" ]]; then
+        ## Also use INSTDIR as default location, if set
+        isAbsPath=`echo "$INSTDIR" | grep '^/'`
+        if [[ -z "$isAbsPath" ]]; then
+            ## Appears to be a relative path
+            TryDir[2]="$INSTROOT"/"$INSTDIR"
+        else
+            ## Appears to be an absolute path
+            TryDir[2]="$INSTDIR"
+        fi
+    fi
+
+    for dir in "${TryDir[@]}"; do
+        installer=`ls -1t "$dir"/$INSTNAME 2>/dev/null | head -n1 `
+        [[ -z "$installer" ]] || break
+    done
+        
     if [[ -z "$installer" ]]; then
         ## Installer not found
-        msg 31 "  Could not find installer '$INSTNAME' in '$INSTDIR'"
+        msg 31 "  Could not find installer '$INSTNAME' in:
+${TryDir[@]}"
         echo ""
         return
     fi
 
     cd "$GAMEDIR"
-    
-    isSH=`grep 'sh$' "$installer"`
-    if [[ ! -z "$isSH" ]]; then
+
+    ## Lower case in bash: https://stackoverflow.com/a/2264537
+    sfx=`echo "$installer" | egrep -o '\.(bzip2|bz2|sh)$' | tr '[:upper:]' '[:lower:]'`
+    unTar=`doUnTar "$installer"`
+    if [[ $sfx == ".sh" ]]; then
         TRIEDINSTALL="SHELL: $installer"
         if [[ -x "$installer" ]]; then
             msg "35" "
@@ -142,7 +164,6 @@ Preparing to install:
            Subfolder should be: $PROGDIR
 "
             $installer
-            find_and_run_executable
         else
             msg "31" "
 Found installer:
@@ -150,7 +171,18 @@ Found installer:
   ... but it is not executable. Run:
     chmod u+x "$installer"
 "
+            return
         fi
+    elif [[ $sfx == ".bz2" || $sfx == ".bzip2" ]]; then
+        TRIEDINSTALL="BZIP2 Archive: $installer"
+        msg "35" "
+Preparing to extract:
+  $installer
+"
+        ## Extracting Bzip: https://superuser.com/a/480951
+        cmd="bzip2 --stdout --verbose --decompress --keep \"$installer\" $unTar"
+        ## Command literal with eval: https://stackoverflow.com/a/2355242
+        eval "$cmd"
     else
         msg "31" "
 Found installer:
@@ -158,5 +190,27 @@ Found installer:
   ... but did not know what to do with it.
 "
         TRIEDINSTALL="UNKNOWN"
+        return
     fi
+    msg "30;102" "
+Installer finished, attempting launch
+  If successful, be sure to also link save files to consistent location:
+  ~/confFiles/games/makeGameLinks.sh
+"
+    ## Indicate if additional packages are needed:
+    [[ -z "$INSTAPT" ]] || msg "43;34" "
+You may need to install additional libraries / software:
+    sudo apt install $INSTAPT"
+
+    ## Indicate if help (URL, man page, etc) is provided:
+    [[ -z "$INSTHELP" ]] || msg "36" "Installation Help: $INSTHELP"
+    find_and_run_executable
+}
+
+
+function doUnTar {
+    isTar=`echo "$1" | grep -i '\.tar\.'`
+    unTarLine=""
+    [[ -z "$isTar" ]] || unTarLine=" | tar -xvf -"
+    echo "$unTarLine"
 }

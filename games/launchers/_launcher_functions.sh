@@ -27,6 +27,7 @@ INSTROOT="/abyss/Installers"
 ##   * If a zip/bz2/bzip2 it will be extracted
 ## Additional installation variables
 ##   * $INSTRENAME : set to "foo/bar", will try to rename 'foo' to 'bar'
+##                   The 'from' part can contain '*' wildcards
 ##   * $INSTAPT    : will show the contents as suggested libraries
 ##   * $INSTHELP   : will suggest contents as installation help source
 
@@ -90,6 +91,7 @@ Failed to find executable in $GAMEDIR
 function runGame {
 
     EXECUTABLE="$GAMEDIR/$PROGDIR/$LAUNCH";
+    extSfx="${LAUNCH##*.}"
     [[ -s "$EXECUTABLE" ]] || return
 
     ## The executable appears to be present
@@ -105,8 +107,7 @@ function runGame {
      else
         ## Not an executable. What is the extension?
         ##     https://stackoverflow.com/a/965069
-        ext="${LAUNCH##*.}"
-        if [ "$ext" = 'jar' ]; then
+        if [[ "$extSfx" == 'jar' ]]; then
             runJava
         else
             msg 31 "  Command exists but is not executable:
@@ -184,6 +185,10 @@ Launcher not found
     fi
 
     autoRename
+
+    ## Set the executable as, well, executable. Usually not needed,
+    ## but sometimes archives don't have correct permissions
+    [[ "$extSfx" != 'jar' && -s "$EXECUTABLE" ]] && chmod u+x "$EXECUTABLE"
     
     msg "30;102" "
 Installer finished, attempting launch
@@ -330,6 +335,9 @@ function autoRename {
     IFS='/' read -ra RenameBits <<< "$INSTRENAME"
     reFrom="${RenameBits[0]}"
     reTo="${RenameBits[1]}"
+    ## If 'From' has a wildcard, do a listing with it
+    ##   Pattern matching: https://stackoverflow.com/a/231298
+    [[ "$reFrom" =~ '*' ]] && reFrom=`ls -1td $reFrom | head -n1`
     
     if [[ -z "$reFrom" || -z "$reTo" ]]; then
         msg "31" "

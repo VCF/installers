@@ -66,7 +66,7 @@ Game directory not found, expected at:
   $GAMEDIR
   This can be a symlink, if desired.
 "
-        sleep 15
+        countdown 15
         return
     fi
 
@@ -84,7 +84,7 @@ Failed to find executable in $GAMEDIR
   Looked in: $PROGDIR
         For: $LAUNCH
 "
-    sleep 15
+    countdown 15
 }
 
 function runGame {
@@ -117,7 +117,7 @@ function runGame {
     ## Show any post-run messages:
     [[ -z "$POSTRUN" ]] || msg "35" "$POSTRUN"
     
-    sleep 30
+    countdown 30
     exit
 }
 
@@ -369,4 +369,15 @@ Rename request
     ## exist. Rename it:
     mv "$reFrom" "$reTo"
     msg "32" "Renamed '$reFrom' to '$reTo'"
+}
+
+function countdown {
+    sec="$1"
+    while [[ "$sec" > 0 ]]; do
+        printf "Waiting: \e[1;33m%3d\e[0m\r" "$sec"
+        ## Bash math: https://unix.stackexchange.com/a/93030
+        sec=`expr "$sec" - 1`
+        sleep 1
+    done
+    echo "                    "
 }

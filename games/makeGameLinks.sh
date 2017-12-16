@@ -55,6 +55,7 @@ PROGRAMS="$HOME/Programs"
 
 ##    ""            "$LOCSHARE/"
 mydirs=(
+    "10000000"                    "$CONFD/unity3d/EightyEightGames/10000000"
     "3089"                        "$HOME/3089"
     "AWizardsLizard"              "$CONFD/A Wizard's Lizard"
     "Anomaly"                     "$HOME/.Anomaly"
@@ -73,6 +74,7 @@ mydirs=(
     "DroidAssault"                "$HOME/.droid_assault_1.92"
     "DroxOperative"               "$HOME/.local/DroxOperative"
     "DustForce"                   "$STEAMCOM/Dustforce/user"
+    "DwarfFortress"               "$PROGRAMS/df_linux/data/save"
     "EuroTruckSimulator2"         "$LOCSHARE/Euro Truck Simulator 2"
     "Factorio"                    "$PROGRAMS/Factorio/game/saves"
     "FEZ"                         "$LOCSHARE/FEZ"

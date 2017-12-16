@@ -1,6 +1,7 @@
 #!/bin/bash
 
 GAMEDIR="$HOME/Programs"
+SAVEDIR="$HOME/Documents/GameFiles"
 LOGFILE="LaunchLog.txt"
 INSTROOT="/abyss/Installers"
 
@@ -30,7 +31,7 @@ INSTROOT="/abyss/Installers"
 ##                   The 'from' part can contain '*' wildcards
 ##   * $INSTAPT    : will show the contents as suggested libraries
 ##   * $INSTHELP   : will suggest contents as installation help source
-
+##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -110,8 +111,8 @@ function runGame {
         if [[ "$extSfx" == 'jar' ]]; then
             runJava
         else
-            msg 31 "  Command exists but is not executable:
-    \"$EXECUTABLE\""
+            msg 31 "  Command exists but is not executable; run:
+    chmod u+x \"$EXECUTABLE\""
         fi
     fi
 
@@ -190,11 +191,11 @@ Launcher not found
     ## but sometimes archives don't have correct permissions
     [[ "$extSfx" != 'jar' && -s "$EXECUTABLE" ]] && chmod u+x "$EXECUTABLE"
     
+    
     msg "30;102" "
-Installer finished, attempting launch
-  If successful, be sure to also link save files to consistent location:
-  ~/confFiles/games/makeGameLinks.sh
+Installer finished, attempting launch...
 "
+    saveLocation
     showComments
     find_and_run_executable
 }
@@ -388,4 +389,53 @@ function countdown {
         sleep 1
     done
     echo "                    "
+}
+
+function saveLocation {
+    if [[ -z "$INSTSAVEDIR" ]]; then
+        msg "34" "
+You may wish to normalize save file location using:
+  ~/confFiles/games/makeGameLinks.sh
+"
+        return
+    fi
+
+    ## If this variable is defined, it represents a save file location
+    ## that needs to be moved to a standardized location
+    [[ -d "$SAVEDIR" ]] || mkdir -p "$SAVEDIR"
+
+    ## The name of the normalized directory will be the same as
+    ## $PROGDIR. Since that argument might have subdirectories, just
+    ## take the root:
+    NormDir=`echo "$PROGDIR" | sed 's/\/.*//'`
+    TargDir="$SAVEDIR"/"$NormDir"
+    
+    if [[ -d "$INSTSAVEDIR" ]]; then
+        ## The expected/original location already exists (typical case)
+        if [[ -d "$TargDir" ]]; then
+            ## So does the normalized location
+            BkupDir="$INSTSAVEDIR"-BKUP
+            mv "$INSTSAVEDIR" "$BkupDir"
+            msg "33" "[!] Initial (empty) save directory moved to: $BkupDir"
+            msg "34" "Using normalized game files at: $TargDir"
+        else
+            ## We have not yet made the normalized location, move the
+            ## initial folder there
+            mv "$INSTSAVEDIR" "$TargDir"
+            msg "34" "Save directory moved to: $TargDir"
+        fi
+    elif [[ -d "$TargDir" ]]; then
+        ## Just acknowledge that we found the prior game files
+        msg "34" "Using normalized game files at: $TargDir"
+    else
+        ## Neither the initial directory nor the normalized one exist
+        ## - some games don't create the save folder until they're
+        ## first run. Create an empty folder in the normalized location
+        mkdir -p "$TargDir"
+    fi
+
+    ## Finally, put a symlink in the "expected" location pointing to
+    ## the normalized one.
+    ln -s "$TargDir" "$INSTSAVEDIR"
+    msg "34" "Save files linked to standard location in $SAVEDIR"
 }

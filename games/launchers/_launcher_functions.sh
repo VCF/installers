@@ -15,14 +15,20 @@ INSTROOT="/abyss/Installers"
 ##   * If it is executable, it will be launched.
 ##   * If it is a Java .jar file, it will be launched with java
 ## In both cases STDOUT will be captured in $LOGFILE (above), written
-## to $PROGDIR
+## to $PROGDIR. Additional run variables:
+##   * $PRERUN  : Will show before running program
+##   * $POSTRUN : Will show after running
 
 ## If the launcher is not found, then the installer directory
 ## $INSTROOT (above) will be checked to see if the instal file
 ## $INSTNAME can be found in directory $INSTDIR. If those variables
 ## are set and the installer is found:
 ##   * If it is a .sh it will be run
-##   * If a .bz2/bzup2 it will be extracted
+##   * If a zip/bz2/bzip2 it will be extracted
+## Additional installation variables
+##   * $INSTRENAME : set to "foo/bar", will try to rename 'foo' to 'bar'
+##   * $INSTAPT    : will show the contents as suggested libraries
+##   * $INSTHELP   : will suggest contents as installation help source
 
 
 ## Copyright (C) 2017 Charles A. Tilford
@@ -63,37 +69,8 @@ Game directory not found, expected at:
         sleep 15
         return
     fi
-    
-    EXECUTABLE="$GAMEDIR/$PROGDIR/$LAUNCH";
-    LOG="$GAMEDIR/$PROGDIR/$LOGFILE";
-    if [ -x "$EXECUTABLE" ]; then
-        msg 32 "  Running $EXECUTABLE"
-        cd "$GAMEDIR/$PROGDIR";
-        # Set terminal title:
-        # https://unix.stackexchange.com/a/11230
-        set_title "Run $PROGDIR";
-        "./$LAUNCH" &> "$LOG"
-        msg 36 "  Launcher finished. Logfile:\n    less -S \"$LOG\"";
-        echo "";
-        sleep 15
-        return
-    elif [ -s "$EXECUTABLE" ]; then
-        ## Not an executable. What is the extension?
-        ##     https://stackoverflow.com/a/965069
-        ext="${LAUNCH##*.}"
-        if [ "$ext" = 'jar' ]; then
-            msg 32 "  Running Java file \"$EXECUTABLE\""
-            cd "$GAMEDIR/$PROGDIR";
-            set_title "Run $PROGDIR";
-            java -Xmx1024M -Xms1024M -jar "$LAUNCH" &> "$LOG"
-            msg 36 "  Launcher finished. Logfile:\n    less -S \"$LOG\"";
-            echo "";
-            sleep 15
-            return
-        else
-            msg 31 "  Command exists but is not executable:\n    \"$EXECUTABLE\""
-        fi
-    fi
+
+    runGame
 
     ## Nothing found. Can we install?
     if [[ -z "$TRIEDINSTALL" ]]; then
@@ -110,27 +87,76 @@ Failed to find executable in $GAMEDIR
     sleep 15
 }
 
+function runGame {
+
+    EXECUTABLE="$GAMEDIR/$PROGDIR/$LAUNCH";
+    [[ -s "$EXECUTABLE" ]] || return
+
+    ## The executable appears to be present
+    TRIEDINSTALL="Already installed"
+    
+    ## Show any pre-run messages:
+    [[ -z "$PRERUN" ]] || msg "35" "$PRERUN"
+
+    LOG="$GAMEDIR/$PROGDIR/$LOGFILE";
+
+    if [ -x "$EXECUTABLE" ]; then
+        runExecutable
+     else
+        ## Not an executable. What is the extension?
+        ##     https://stackoverflow.com/a/965069
+        ext="${LAUNCH##*.}"
+        if [ "$ext" = 'jar' ]; then
+            runJava
+        else
+            msg 31 "  Command exists but is not executable:
+    \"$EXECUTABLE\""
+        fi
+    fi
+
+    ## Show any post-run messages:
+    [[ -z "$POSTRUN" ]] || msg "35" "$POSTRUN"
+    
+    sleep 30
+    exit
+}
+
+function runExecutable {
+    msg 32 "  Running $EXECUTABLE"
+    cd "$GAMEDIR/$PROGDIR";
+    ## Set terminal title:  https://unix.stackexchange.com/a/11230
+    set_title "Run $PROGDIR";
+    "./$LAUNCH" &> "$LOG"
+    msg 36 "  Launcher finished. Logfile:
+    less -S \"$LOG\"
+";
+}
+
+function runJava {
+    msg 32 "  Running Java file \"$EXECUTABLE\""
+    cd "$GAMEDIR/$PROGDIR";
+    set_title "Run $PROGDIR";
+    java -Xmx1024M -Xms1024M -jar "$LAUNCH" &> "$LOG"
+    msg 36 "  Launcher finished. Logfile:
+    less -S \"$LOG\"
+";
+}
+
 function installGame {
     TRIEDINSTALL="CHECKED"
     if [[ -z "$INSTNAME" ]]; then
         ## No information on where to find installer
         msg "31" "
-No guidance given on where to find installer
+Launcher not found
+  No guidance given on where to find installer
   Consider setting INSTDIR and INSTNAME in the launcher
 "
         echo ""
         return
     fi
     findInstaller
+    [[ -z "$installer" ]] && return
         
-    if [[ -z "$installer" ]]; then
-        ## Installer not found
-        msg 31 "  Could not find installer '$INSTNAME' in:
-${TryDir[@]}"
-        echo ""
-        return
-    fi
-
     cd "$GAMEDIR"
     determineSuffix
 
@@ -148,6 +174,9 @@ ${TryDir[@]}"
     elif [[ $sfx == "gz" ]]; then
         ## gzip archive
         installGzip
+    elif [[ $sfx == "zip" ]]; then
+        ## gzip archive
+        installZip
     else
         ## No idea!
         failedUnknown
@@ -190,6 +219,15 @@ function findInstaller {
         installer=`ls -1t "$dir"/$INSTNAME 2>/dev/null | head -n1 `
         [[ -z "$installer" ]] || break # Take first example we find
     done
+    
+    if [[ -z "$installer" ]]; then
+        ## Installer not found
+        msg 31 "
+Could not find installer '$INSTNAME' in:
+  ${TryDir[*]}"
+        echo ""
+    fi
+
 }
 
 function determineSuffix {
@@ -237,6 +275,18 @@ Preparing to extract:
 "
     ## Extracting Bzip: https://superuser.com/a/480951
     cmd="gzip --stdout --verbose --decompress --keep \"$installer\" $unTar"
+    ## Command literal with eval: https://stackoverflow.com/a/2355242
+    eval "$cmd"
+}
+
+function installZip {
+    TRIEDINSTALL="ZIP Archive: $installer"
+    msg "35" "
+Preparing to extract:
+  $installer
+"
+    ## Extracting Bzip: https://superuser.com/a/480951
+    cmd="unzip \"$installer\""
     ## Command literal with eval: https://stackoverflow.com/a/2355242
     eval "$cmd"
 }

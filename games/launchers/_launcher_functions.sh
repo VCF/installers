@@ -32,6 +32,7 @@ INSTROOT="/abyss/Installers"
 ##   * $INSTAPT    : will show the contents as suggested libraries
 ##   * $INSTHELP   : will suggest contents as installation help source
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
+##   * INSTICON    : custom icon file name (basename)
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -103,7 +104,7 @@ function runGame {
 
     LOG="$GAMEDIR/$PROGDIR/$LOGFILE";
 
-    if [ -x "$EXECUTABLE" ]; then
+    if [[ -x "$EXECUTABLE" ]]; then
         runExecutable
      else
         ## Not an executable. What is the extension?
@@ -191,6 +192,7 @@ Launcher not found
     ## but sometimes archives don't have correct permissions
     [[ "$extSfx" != 'jar' && -s "$EXECUTABLE" ]] && chmod u+x "$EXECUTABLE"
     
+    desktopIcon
     
     msg "30;102" "
 Installer finished, attempting launch...
@@ -404,11 +406,7 @@ You may wish to normalize save file location using:
     ## that needs to be moved to a standardized location
     [[ -d "$SAVEDIR" ]] || mkdir -p "$SAVEDIR"
 
-    ## The name of the normalized directory will be the same as
-    ## $PROGDIR. Since that argument might have subdirectories, just
-    ## take the root:
-    NormDir=`echo "$PROGDIR" | sed 's/\/.*//'`
-    TargDir="$SAVEDIR"/"$NormDir"
+    TargDir="$SAVEDIR"/"$PROGDIR"
     
     if [[ -d "$INSTSAVEDIR" ]]; then
         ## The expected/original location already exists (typical case)
@@ -438,4 +436,64 @@ You may wish to normalize save file location using:
     ## the normalized one.
     ln -s "$TargDir" "$INSTSAVEDIR"
     msg "34" "Save files linked to standard location in $SAVEDIR"
+}
+
+function fallBackPath {
+    ## Get a file from one of two locations
+    # $1 - file name (basename)
+    # $2 - priority directory
+    # $3 - fallback directory
+    if [[ -s "$2/$1" ]]; then
+        fbp="$2/$1"
+    elif [[ -s "$3/$1" ]]; then
+        fbp="$3/$1"
+    else
+        ## Failed to find it in either
+        fbp=""
+    fi
+}
+
+function desktopIcon {
+    ## Make a desktop launcher
+    dt="$HOME/Desktop/$PROGDIR".desktop
+    [[ -s "$dt" ]] && return # Do nothing else if it is already there
+    iDir="$SAVEDIR/.icons"   # Local icon store
+    iSrc="/abyss/Media/iconImages"     # Primary storage
+    iBkup="/abyss/Common/ToFile/icons" # But check here first
+    defIcon="GenericIcon.png"          # Default icon
+    icon=${INSTICON:-"$defIcon"}
+    iPath="$iDir/$icon"
+    mkdir -p "$iDir"
+    if [[ ! -s "$iPath" ]]; then
+        ## Make a local copy of the icon
+        fallBackPath "$icon" "$iBkup" "$iSrc"
+        if [[ -z "$fbp" ]]; then
+            ## Failed to find the icon, use the default
+            $icon="$defIcon"
+            iPath="$iDir/$icon"
+            fallBackPath "$icon" "$iBkup" "$iSrc"
+        fi
+        [[ -z "$fbp" ]] || cp "$fbp" "$iPath" # Copy to local storage if found
+    fi
+
+    ## https://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
+    echo "[Desktop Entry]
+Name=$PROGDIR
+Exec=$0
+Type=Application
+Terminal=true
+Path=$GAMEDIR/$PROGDIR
+Icon=$iPath
+" > "$dt"
+    chmod +x "$dt"
+    chmod g-w "$dt"
+    msg "35" "Desktop launcher created: $PROGDIR
+  (may need to drag from folder to desktop)"
+    ## In KDE Plasma these don't seem to automatically register on the
+    ## desktop? That is, I can see them in ~/Desktop, but they're not
+    ## displayed on the 'actual' desktop.
+
+    ## Appears to be managed in:
+    ## ~/.config/plasma-org.kde.plasma.desktop-appletsrc
+    ## ... but don't see an easy way to append to that...
 }

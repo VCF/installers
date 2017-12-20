@@ -74,7 +74,7 @@ mydirs=(
     "DroidAssault"                "$HOME/.droid_assault_1.92"
     "DroxOperative"               "$HOME/.local/DroxOperative"
     "DustForce"                   "$STEAMCOM/Dustforce/user"
-    "DwarfFortress"               "$PROGRAMS/df_linux/data/save"
+    "DwarfFortress"               "$PROGRAMS/DwarfFortress/data/save"
     "EuroTruckSimulator2"         "$LOCSHARE/Euro Truck Simulator 2"
     "Factorio"                    "$PROGRAMS/Factorio/game/saves"
     "FEZ"                         "$LOCSHARE/FEZ"

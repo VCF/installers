@@ -30,7 +30,7 @@ LICENSE_GPL3="
 my_dir="$(dirname "$0")"
 ## Make script path absolute: https://stackoverflow.com/a/4175545
 my_dir=`readlink -f "$my_dir"`
-. "$my_dir/../systemSetup/_util_functions.sh"
+. "$my_dir/../generalUtilities/_util_functions.sh"
 
 
 
@@ -214,6 +214,7 @@ do
     echo ""
 done
 
-msg 34 "Complete! Please make sure that your local directory contains the files you expect to be there
+msg 34 "Complete! Please make sure that your local directory:
+    $GAMEDIR
+  contains the files you expect to be there.
 "
-

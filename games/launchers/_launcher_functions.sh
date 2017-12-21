@@ -57,7 +57,7 @@ LICENSE_GPL3="
 
 ## Load the general utility functions, held in the same repo
 my_dir="$(dirname "$0")"
-. "$my_dir/../../systemSetup/_util_functions.sh"
+. "$my_dir/../../generalUtilities/_util_functions.sh"
 
 
 # Testing the suffix of a file:

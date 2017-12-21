@@ -24,14 +24,24 @@ if [[ -z "$Dest" ]]; then
     exit
 fi
 
+## About to change directory, so make sure we have absolute path of
+## both source and destination:
+AbsFolder=`readlink -f "$Folder"`
+AbsDest=`readlink -f "$Dest"`
+fDir=`dirname "$AbsFolder"`
+
+## git appears to be unhappy if you're not in the repo that holds $Folder
+
+cd "$fDir"
+
 git log \
     --pretty=email \
     --patch-with-stat \
     --reverse \
     --full-index \
     --binary \
-    -- "$Folder" > "$Dest"
+    -- "$AbsFolder" > "$AbsDest"
 
 echo "Now cd to the 'recipient' repository, and run:
-  git am < \"$Dest\"
+  git am < \"$AbsDest\"
 "

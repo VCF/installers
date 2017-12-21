@@ -32,7 +32,8 @@ INSTROOT="/abyss/Installers"
 ##   * $INSTAPT    : will show the contents as suggested libraries
 ##   * $INSTHELP   : will suggest contents as installation help source
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
-##   * INSTICON    : custom icon file name (basename)
+##   * INSTICON    : custom icon file name (basename) for launcher
+##   * INSTFUNCTON : custom function that runs after installation
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -101,6 +102,8 @@ function runGame {
     
     ## Show any pre-run messages:
     [[ -z "$PRERUN" ]] || msg "35" "$PRERUN"
+
+    customRunFunction
 
     LOG="$GAMEDIR/$PROGDIR/$LOGFILE";
 
@@ -187,6 +190,7 @@ Launcher not found
     fi
 
     autoRename
+    customInstallFunction
 
     ## Set the executable as, well, executable. Usually not needed,
     ## but sometimes archives don't have correct permissions
@@ -476,10 +480,12 @@ function desktopIcon {
         [[ -z "$fbp" ]] || cp "$fbp" "$iPath" # Copy to local storage if found
     fi
 
+    Exec=`readlink -f "$0"` # Absolute launcher path, de-linkified
+
     ## https://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
     echo "[Desktop Entry]
 Name=$PROGDIR
-Exec=$0
+Exec=$Exec
 Type=Application
 Terminal=true
 Path=$GAMEDIR/$PROGDIR
@@ -496,4 +502,24 @@ Icon=$iPath
     ## Appears to be managed in:
     ## ~/.config/plasma-org.kde.plasma.desktop-appletsrc
     ## ... but don't see an easy way to append to that...
+}
+
+function customInstallFunction {
+    ## I've tried to codify 'typical' operations as functions that
+    ## work off of simple environment variables, but sometimes more
+    ## esoteric steps are needed. Check to see if a custom
+    ## installation function has been defined
+
+    ## Check if function is set: https://stackoverflow.com/a/85903
+    funcSet=`type -t INSTFUNCTION`
+    [[ "$funcSet" == "function" ]] || return
+
+    INSTFUNCTION
+}
+
+function customRunFunction {
+    funcSet=`type -t RUNFUNCTION`
+    [[ "$funcSet" == "function" ]] || return
+
+    RUNFUNCTION
 }

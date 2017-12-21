@@ -1,3 +1,4 @@
 [submodule "generalUtilities"]
 	path = generalUtilities
 	url = git@github.com:VCF/generalUtilities.git
+	branch = master

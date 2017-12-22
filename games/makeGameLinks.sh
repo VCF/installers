@@ -70,6 +70,7 @@ mydirs=(
     "CaveStory+"                  "$LOCSHARE/CaveStory+"
     "Cosmochoria"                 "$CONFD/Cosmochoria"
     "CostumeQuest"                "$LOCSHARE/doublefine/costumequest"
+    "Crea"                        "$PROGRAMS/Crea/SaveData"
     "DontTouchAnything"           "$CONFD/DontTouchAnything"
     "DroidAssault"                "$HOME/.droid_assault_1.92"
     "DroxOperative"               "$HOME/.local/DroxOperative"

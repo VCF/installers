@@ -1,8 +1,10 @@
 #!/bin/bash
 
 ## Location of the executable:
-PROGDIR="Starbound"
-LAUNCH="linux/run-server.sh"
+PROGDIR="StarboundServer"
+PROGSUBDIR="linux"
+LAUNCH="starbound_server"
+NOREDIRECT=true
 ## Location of the installer:
 INSTDIR="Humble Indie Bundle/Starbound"
 INSTNAME='starbound_*_linux.zip'
@@ -15,14 +17,13 @@ function INSTFUNCTION {
     chmod u+x "$GAMEDIR/$PROGDIR/linux/starbound"
     chmod u+x "$GAMEDIR/$PROGDIR/linux/starbound_server"
     chmod u+x "$GAMEDIR/$PROGDIR/linux/run-client.sh"
-    chmod u+x "$GAMEDIR/$PROGDIR/linux/run-server.sh"
+    
+    ## PROGDIR manages individual applications, so make a symlink
+    ln -s "$PROGDIR " "$GAMEDIR/Starbound"
 }
 
-function RUNFUNCTION {
-    desktopIcon # Make sure desktop launcher is created (server/client)
-}
 
 my_dir="$(dirname "$0")"
 . "$my_dir/_launcher_functions.sh"
 
-find_and_run_executable
+find_and_run_executable "$@"

@@ -55,17 +55,58 @@ LICENSE_GPL3="
 
 "
 
-## Load the general utility functions, held in the same repo
-my_dir="$(dirname "$0")"
-. "$my_dir/../../generalUtilities/_util_functions.sh"
+## script folder: https://stackoverflow.com/a/246128
+myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. "$myLaunchDir/../../generalUtilities/_backupFunctions.sh"
 
 
 # Testing the suffix of a file:
 # https://stackoverflow.com/a/965072
 
+function launcherHelp {
+    msg "$FgBlue" "\nThis is a launcher file for \"$PROGDIR\""
+    [[ -z "$INSTDIR" ]] || msg "$FgCyan" "  It can auto-install the program"
+    [[ -z "$INSTSAVEDIR" ]] || msg "$FgCyan" "  It will normalize save file location for you"
+    msg "$FgBlue" "\nYou can pass it the following arguments:"
+    msg "$FgCyan" "
+      help - Show this help
+  shortcut - Will make a desktop shortcut for you
+      save - Move save files to a known location, link to expected location
+    backup - Will backup game files, if needed and in a known location
+  linkwine - Special follow up command to link wine directories
+"
+}
+
 function find_and_run_executable {
+
+    if [[ `hasParam "$1" "run"` ]]; then
+        ## Explicit request to run the game - just move on from elif block
+        ""
+    elif [[ `hasParam "$1" "help"` ]]; then
+        ## Show help
+        launcherHelp; return
+    elif [[ `hasParam "$1" "backup"` ]]; then
+        ## Make the shortcut
+        backupGameFiles; return
+    elif [[ `hasParam "$1" "shortcut"` || `hasParam "$1" "desktop"` ]]; then
+        ## Make the shortcut
+        desktopIcon; return
+    elif [[ `hasParam "$1" "linkwine"` || `hasParam "$1" "winelink"` ]]; then
+        ## Link the wine directory to the Progams directory
+        linkWine
+        return
+    elif [[ `hasParam "$1" "save"` ]]; then
+        ## Move the save files to a standard location
+        saveLocation; return
+    elif [[ ! -z "$1" ]]; then
+        ## Parameters were passed, but we don't know what they are
+        err "Unrecognized parameters:"
+        err "  $1  "
+        launcherHelp; return
+    fi
+    
     if [[ ! -d "$GAMEDIR" ]]; then
-        msg "31" "
+        msg "$FgRed" "
 Game directory not found, expected at:
   $GAMEDIR
   This can be a symlink, if desired.
@@ -83,7 +124,7 @@ Game directory not found, expected at:
     fi
     
     ## Nothing found in any of the paths:
-    msg 31 "
+    msg "$FgRed" "
 Failed to find executable in $GAMEDIR
   Looked in: $PROGDIR
         For: $LAUNCH
@@ -93,57 +134,76 @@ Failed to find executable in $GAMEDIR
 
 function runGame {
 
-    EXECUTABLE="$GAMEDIR/$PROGDIR/$LAUNCH";
-    extSfx="${LAUNCH##*.}"
+    EXECUTABLE="$GAMEDIR/$PROGDIR"
+    [[ -z "$WINESUBDIR" ]] || EXECUTABLE="$EXECUTABLE/$WINESUBDIR"
+    EXECUTABLE="$EXECUTABLE/$LAUNCH"
     [[ -s "$EXECUTABLE" ]] || return
+    extSfx="${LAUNCH##*.}"
 
     ## The executable appears to be present
     TRIEDINSTALL="Already installed"
     
     ## Show any pre-run messages:
-    [[ -z "$PRERUN" ]] || msg "35" "$PRERUN"
+    [[ -z "$PRERUN" ]] || msg "$FgMagenta" "$PRERUN"
 
     customRunFunction
 
     LOG="$GAMEDIR/$PROGDIR/$LOGFILE";
 
-    if [[ -x "$EXECUTABLE" ]]; then
+    if [[ "$extSfx" == 'exe' ]]; then
+        runWine
+    elif [[ -x "$EXECUTABLE" ]]; then
         runExecutable
-     else
+    else
         ## Not an executable. What is the extension?
         ##     https://stackoverflow.com/a/965069
         if [[ "$extSfx" == 'jar' ]]; then
             runJava
         else
-            msg 31 "  Command exists but is not executable; run:
+            msg "$FgRed" "  Command exists but is not executable; run:
     chmod u+x \"$EXECUTABLE\""
         fi
     fi
 
+    backupGameFiles # Backup files to server, if save path is known
+
     ## Show any post-run messages:
-    [[ -z "$POSTRUN" ]] || msg "35" "$POSTRUN"
+    [[ -z "$POSTRUN" ]] || msg "$FgMagenta" "$POSTRUN"
     
     countdown 30
     exit
 }
 
 function runExecutable {
-    msg 32 "  Running $EXECUTABLE"
+    msg "$FgGreen" "  Running $EXECUTABLE"
     cd "$GAMEDIR/$PROGDIR";
     ## Set terminal title:  https://unix.stackexchange.com/a/11230
     set_title "Run $PROGDIR";
     "./$LAUNCH" &> "$LOG"
-    msg 36 "  Launcher finished. Logfile:
+    msg "$FgCyan" "  Launcher finished. Logfile:
+    less -S \"$LOG\"
+";
+}
+
+function runWine {
+    msg "$FgGreen" "  Wine launch of $EXECUTABLE"
+    cd "$GAMEDIR/$PROGDIR/"
+    ## If an additional subdirectory is specified, move there
+    [[ -z "$WINESUBDIR" ]] || cd "$WINESUBDIR"
+
+    set_title "Wine $PROGDIR";
+    wine "$LAUNCH" &> "$LOG"
+    msg "$FgCyan" "  Launcher finished. Logfile:
     less -S \"$LOG\"
 ";
 }
 
 function runJava {
-    msg 32 "  Running Java file \"$EXECUTABLE\""
+    msg "$FgGreen" "  Running Java file \"$EXECUTABLE\""
     cd "$GAMEDIR/$PROGDIR";
     set_title "Run $PROGDIR";
     java -Xmx1024M -Xms1024M -jar "$LAUNCH" &> "$LOG"
-    msg 36 "  Launcher finished. Logfile:
+    msg "$FgCyan" "  Launcher finished. Logfile:
     less -S \"$LOG\"
 ";
 }
@@ -152,7 +212,7 @@ function installGame {
     TRIEDINSTALL="CHECKED"
     if [[ -z "$INSTNAME" ]]; then
         ## No information on where to find installer
-        msg "31" "
+        msg "$FgRed" "
 Launcher not found
   No guidance given on where to find installer
   Consider setting INSTDIR and INSTNAME in the launcher
@@ -166,7 +226,12 @@ Launcher not found
     cd "$GAMEDIR"
     determineSuffix
 
-    if [[ $sfx == "sh" ]]; then
+    if [[ ! -z "$INSTCOPY" ]]; then
+        ## Installation is simply copying the file to a new location
+        installCopy
+    elif [[ $sfx == "exe" ]]; then
+        installWine
+    elif [[ $sfx == "sh" ]]; then
         TRIEDINSTALL="SHELL: $installer"
         if [[ -x "$installer" ]]; then
             installShell
@@ -198,7 +263,7 @@ Launcher not found
     
     desktopIcon
     
-    msg "30;102" "
+    msg "$FgBlack;102" "
 Installer finished, attempting launch...
 "
     saveLocation
@@ -234,12 +299,11 @@ function findInstaller {
     
     if [[ -z "$installer" ]]; then
         ## Installer not found
-        msg 31 "
+        msg "$FgRed" "
 Could not find installer '$INSTNAME' in:
   ${TryDir[*]}"
         echo ""
     fi
-
 }
 
 function determineSuffix {
@@ -257,8 +321,20 @@ function isTarArchive {
     echo "$unTarLine"
 }
 
+function installCopy {
+    ## Installation is just copying a file
+    gp="$GAMEDIR/$PROGDIR"
+    mkdir -p "$gp"
+    msg ""
+    msg "$FgMagenta" "
+Copying executable $EXECUTABLE to:
+  $gp
+"
+    cp "$INSTDIR/$LAUNCH" "$EXECUTABLE"
+}
+
 function installShell {
-    msg "35" "
+    msg "$FgMagenta" "
 Preparing to install:
   $installer
   If asked for a location, use: $GAMEDIR
@@ -267,9 +343,107 @@ Preparing to install:
     $installer
 }
 
+function installWine {
+    Pwd=`pwd`
+    cDrive="$GAMEDIR/drive_c"
+    if [[ ! -d "$cDrive" ]]; then
+        defLoc="$HOME/.wine/drive_c"
+        msg "$FgRed" "
+Wine's C:/ drive is expected to be at:
+  $cDrive
+  It was not found, and is likely here:
+    $defLoc
+  Set up symlinks between the two locations, that is one of:
+    mv  \"$defLoc\" \"$cDrive\" && ln -s  \"$cDrive\" \"$defLoc\"
+  or:
+    ln -s \"$defLoc\"  \"$cDrive\"
+"
+        return
+    fi
+
+    ## Wine wants files to be 'on' drive_c. For GOG, the installer is
+    ## often a small exe plus one or more .bin files. So we will make
+    ## a temporary symlink to the installer directory in C:/
+    cd "$cDrive"
+    tmpLnk="TempLinkForInstallation"
+    instDir=`dirname "$installer"`
+    instExe=`basename "$installer"`
+    ln -s "$instDir" "$tmpLnk"
+    # Now run the installer
+    msg "$FgMagenta" "
+Launching installer in wine:
+  $installer
+  Allow installer to use default installation directories
+"
+    wine "$tmpLnk/$instExe"
+    rm "$tmpLnk" # Remove the symlink
+    linkWine
+    
+    cd "$Pwd" # Return to prior directory
+}
+
+function linkWine {
+    cDrive="$GAMEDIR/drive_c"
+    if [[ -z "$WINETARGET" ]]; then
+        msg "$FgRed" "
+The launcher has not set the \$WINETARGET variable
+  This defines where the file should be created after wine runs the installer
+  * Inspect c_drive to determine where the program has been installed
+  * Set WINETARGET='where/you/found/it'
+  * run: $0 linkwine
+  Until this is updated, the program will not run (at least by the launcher)
+"
+        return
+    fi
+    
+    wineTarg="$cDrive/$WINETARGET"
+    gp="$GAMEDIR/$PROGDIR"
+
+    if [[ ! -d "$wineTarg" ]]; then
+        msg "$FgRed" "
+Could not find the wine target directory at:
+  $wineTarg
+"
+        return
+    fi
+
+    if [[ -L "$gp" ]]; then
+        ## The standardized program directory is already a symlink
+        chk=`readlink -f "$gp"`
+        wtc=`readlink -f "$wineTarg"`
+        if [[ "$chk" == "$wtc" ]]; then
+            msg "$FgCyan" "Symlink ok: $gp"
+        else
+            err "Symlink exists, but points to unexpected location
+   Link At: $gp
+   Desired: $wtc
+  Existing: $chk
+"
+        fi
+    elif [[ -d "$gp" ]]; then
+        ## The program directory is an actual directory
+        msg "$FgRed" "
+I want to link:
+  $wineTarg
+  to:
+  $gp
+  ... but that target is already a directory. It should be a link.
+  Please resolve?
+"
+        return
+    else
+        ## Make a symlink in the game directory to the C:/ location of the game:
+        ln -s "$wineTarg" "$gp"
+        msg "$FgCyan" "Symlink to C:/ created: $gp"
+    fi
+    desktopIcon
+    saveLocation
+    showComments
+}
+
 function installBzip {
     TRIEDINSTALL="BZIP2 Archive: $installer"
-    msg "35" "
+    msg "$FgMagenta" "
 Preparing to extract:
   $installer
 "
@@ -281,7 +455,7 @@ Preparing to extract:
 
 function installGzip {
     TRIEDINSTALL="GZIP Archive: $installer"
-    msg "35" "
+    msg "$FgMagenta" "
 Preparing to extract:
   $installer
 "
@@ -293,7 +467,7 @@ Preparing to extract:
 
 function installZip {
     TRIEDINSTALL="ZIP Archive: $installer"
-    msg "35" "
+    msg "$FgMagenta" "
 Preparing to extract:
   $installer
 "
@@ -304,7 +478,7 @@ Preparing to extract:
 }
 
 function failedNotExecutable {
-    msg "31" "
+    msg "$FgRed" "
 Found installer:
   $installer
   ... but it is not executable. Run:
@@ -313,7 +487,7 @@ Found installer:
 }
 
 function failedUnknown {
-    msg "31" "
+    msg "$FgRed" "
 Found installer:
   $installer
   ... but did not know what to do with it.
@@ -323,12 +497,12 @@ Found installer:
 
 function showComments {
     ## Indicate if additional packages are indicated as needed:
-    [[ -z "$INSTAPT" ]] || msg "43;34" "
+    [[ -z "$INSTAPT" ]] || msg "$BgYellow;$FgBlue" "
 You may need to install additional libraries / software using:
     sudo apt install $INSTAPT"
 
     ## Indicate if help (URL, man page, etc) is provided:
-    [[ -z "$INSTHELP" ]] || msg "36" "Installation Help: $INSTHELP"
+    [[ -z "$INSTHELP" ]] || msg "$FgCyan" "Installation Help: $INSTHELP"
     
 }
 
@@ -347,7 +521,7 @@ function autoRename {
     [[ "$reFrom" =~ '*' ]] && reFrom=`ls -1td $reFrom | head -n1`
     
     if [[ -z "$reFrom" || -z "$reTo" ]]; then
-        msg "31" "
+        msg "$FgRed" "
 The variable INSTRENAME was set, indicating that something should be renamed
   But I only found one part (there should be two separated by '/'):
     $INSTRENAME
@@ -357,7 +531,7 @@ The variable INSTRENAME was set, indicating that something should be renamed
     fi
 
     if [[ ! -e "$reFrom" ]]; then
-        msg "31" "
+        msg "$FgRed" "
 Rename request
   From: \"$reFrom\"
     To: \"$reTo\"
@@ -368,7 +542,7 @@ Rename request
     fi
 
     if [[ -e "$reTo" ]]; then
-        msg "31" "
+        msg "$FgRed" "
 Rename request
   From: \"$reFrom\"
     To: \"$reTo\"
@@ -383,7 +557,7 @@ Rename request
     ## We have identified the "from" file, and the "to" file does not
     ## exist. Rename it:
     mv "$reFrom" "$reTo"
-    msg "32" "Renamed '$reFrom' to '$reTo'"
+    msg "$FgGreen" "Renamed '$reFrom' to '$reTo'"
 }
 
 function countdown {
@@ -399,7 +573,7 @@ function countdown {
 
 function saveLocation {
     if [[ -z "$INSTSAVEDIR" ]]; then
-        msg "34" "
+        msg "$FgBlue" "
 You may wish to normalize save file location using:
   ~/confFiles/games/makeGameLinks.sh
 "
@@ -411,24 +585,51 @@ You may wish to normalize save file location using:
     [[ -d "$SAVEDIR" ]] || mkdir -p "$SAVEDIR"
 
     TargDir="$SAVEDIR"/"$PROGDIR"
-    
-    if [[ -d "$INSTSAVEDIR" ]]; then
+
+    isd="$INSTSAVEDIR"
+    if [[ ! "$isd" =~ ^/ ]]; then
+        ## This appears to be a relative path
+        if [[ -z "$WINETARGET" ]]; then
+            msg "$FgYellow" "A save directory has been specified:
+  $isd
+  ... but it is a relative path and I don't know how to make it absolute
+"
+            return
+        else
+            isd="$GAMEDIR/drive_c/$WINETARGET/$isd"
+        fi
+    fi
+
+    if [[ -L "$isd" ]]; then
+        tTarg=`readlink -f "$isd"`
+        sTarg=`readlink -f "$TargDir"`
+        if [[ "$tTarg" == "$sTarg" ]]; then
+            msg "$FgCyan" "Game files already linked from\n  $isd"
+        else
+            err "Game files are linked, but not to expected location:
+    File location: $isd
+           Target: $tTarg
+  Expected Target: $sTarg
+"
+        fi
+        return
+    elif [[ -d "$isd" ]]; then
         ## The expected/original location already exists (typical case)
         if [[ -d "$TargDir" ]]; then
             ## So does the normalized location
-            BkupDir="$INSTSAVEDIR"-BKUP
-            mv "$INSTSAVEDIR" "$BkupDir"
-            msg "33" "[!] Initial (empty) save directory moved to: $BkupDir"
-            msg "34" "Using normalized game files at: $TargDir"
+            BkupDir="$isd"-BKUP
+            mv "$isd" "$BkupDir"
+            msg "$FgYellow" "[!] Initial (empty) save directory moved to: $BkupDir"
+            msg "$FgBlue" "Using normalized game files at: $TargDir"
         else
             ## We have not yet made the normalized location, move the
             ## initial folder there
-            mv "$INSTSAVEDIR" "$TargDir"
-            msg "34" "Save directory moved to: $TargDir"
+            mv "$isd" "$TargDir"
+            msg "$FgBlue" "Save directory moved to: $TargDir"
         fi
     elif [[ -d "$TargDir" ]]; then
         ## Just acknowledge that we found the prior game files
-        msg "34" "Using normalized game files at: $TargDir"
+        msg "$FgBlue" "Using normalized game files at: $TargDir"
     else
         ## Neither the initial directory nor the normalized one exist
         ## - some games don't create the save folder until they're
@@ -438,8 +639,8 @@ You may wish to normalize save file location using:
 
     ## Finally, put a symlink in the "expected" location pointing to
     ## the normalized one.
-    ln -s "$TargDir" "$INSTSAVEDIR"
-    msg "34" "Save files linked to standard location in $SAVEDIR"
+    ln -s "$TargDir" "$isd"
+    msg "$FgBlue" "Save files linked to standard location in $SAVEDIR"
 }
 
 function fallBackPath {
@@ -459,9 +660,11 @@ function fallBackPath {
 
 function desktopIcon {
     ## Make a desktop launcher
-    dt="$HOME/Desktop/$PROGDIR".desktop
-    [[ -s "$dt" ]] && return # Do nothing else if it is already there
-    iDir="$SAVEDIR/.icons"   # Local icon store
+    dtDir="$HOME/Desktop" # For .desktop files
+    mkdir -p "$dtDir"
+    dt="$dtDir/$PROGDIR".desktop
+    [[ -s "$dt" ]] && return  # Do nothing else if it is already there
+    iDir="$SAVEDIR/.icons"    # Local icon store
     iSrc="/abyss/Media/iconImages"     # Primary storage
     iBkup="/abyss/Common/ToFile/icons" # But check here first
     defIcon="GenericIcon.png"          # Default icon
@@ -480,28 +683,37 @@ function desktopIcon {
         [[ -z "$fbp" ]] || cp "$fbp" "$iPath" # Copy to local storage if found
     fi
 
-    Exec=`readlink -f "$0"` # Absolute launcher path, de-linkified
+    ## I keep ending up with weird executables...
+    exeDir=`readlink -f "$myLaunchDir"` # Launcher directory
+    exeExe=`basename "$0"`         # Launcher script name
+    Exec="$exeDir/$exeExe" # Absolute launcher path, de-linkified
+
+    ## konsole is *REFUSING* to run in the context of a launcher, at
+    ## least in KDE. This causes the launcher to fail when
+    ## 'terminal=true'. So I am instead setting Exec to open
+    ## gnome-terminal and run the script there. This seems to have
+    ## been an issue for a while, with no clear solution:
+    ##  https://forums.linuxmint.com/viewtopic.php?t=231043
 
     ## https://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
     echo "[Desktop Entry]
 Name=$PROGDIR
-Exec=$Exec
+Comment=Launch $PROGDIR
+Exec=gnome-terminal -e $Exec
 Type=Application
-Terminal=true
+#Terminal=true
 Path=$GAMEDIR/$PROGDIR
 Icon=$iPath
 " > "$dt"
     chmod +x "$dt"
     chmod g-w "$dt"
-    msg "35" "Desktop launcher created: $PROGDIR
-  (may need to drag from folder to desktop)"
-    ## In KDE Plasma these don't seem to automatically register on the
-    ## desktop? That is, I can see them in ~/Desktop, but they're not
-    ## displayed on the 'actual' desktop.
+    msg "$FgMagenta" "Desktop launcher created:\n  $dt"
 
-    ## Appears to be managed in:
-    ## ~/.config/plasma-org.kde.plasma.desktop-appletsrc
-    ## ... but don't see an easy way to append to that...
+    ## In KDE Plasma, in order to see launchers on the desktop it
+    ## needs to be configured as "Folder View":
+    ##   Right-click on desktop, choose 'Configure Desktop'
+    ##   Select 'Wallpaper'
+    ##   Set Layout: to "Folder View"
 }
 
 function customInstallFunction {
@@ -522,4 +734,11 @@ function customRunFunction {
     [[ "$funcSet" == "function" ]] || return
 
     RUNFUNCTION
+}
+
+function backupGameFiles {
+    ## If INSTSAVEDIR is not set, presume we have not normalized the save path
+    [[ -z "$INSTSAVEDIR" ]] && return
+    msg "$BgBlue;$FgYellow" "Backing up... $SAVEDIR/$PROGDIR"
+    archiveFolder "$SAVEDIR/$PROGDIR" "GameFiles"
 }

@@ -4,7 +4,7 @@
 
 ## Location of the executable:
 PROGDIR="SilentStorm"
-WINESUBDIR="Silent Storm"
+PROGSUBDIR="Silent Storm"
 LAUNCH="game.exe"
 ## Location of the installer:
 INSTDIR="GOG/Silent Storm"

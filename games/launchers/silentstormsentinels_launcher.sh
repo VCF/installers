@@ -4,7 +4,7 @@
 
 ## Location of the executable:
 PROGDIR="SilentStormSentinels"
-WINESUBDIR="Silent Storm Sentinels"
+PROGSUBDIR="Silent Storm Sentinels"
 LAUNCH="Sentinels.exe"
 ## Location of the installer:
 INSTDIR="GOG/Silent Storm"

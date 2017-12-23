@@ -9,16 +9,18 @@ INSTROOT="/abyss/Installers"
 ## games are expected to be in $GAMEDIR (above). Launching will look
 ## for two environment variables:
 
-##   $PROGDIR - The first-level subdirectory of $GAMEDIR
-##   $LAUNCH  - The name of the executable (can include additional subdirs)
+##    $PROGDIR - The first-level subdirectory of $GAMEDIR
+##    $LAUNCH  - The name of the executable (can include additional subdirs)
+## $PROGSUBDIR - Optional subdirectory. Used to set initial path of run
 
 ## If the file is found:
 ##   * If it is executable, it will be launched.
 ##   * If it is a Java .jar file, it will be launched with java
 ## In both cases STDOUT will be captured in $LOGFILE (above), written
 ## to $PROGDIR. Additional run variables:
-##   * $PRERUN  : Will show before running program
-##   * $POSTRUN : Will show after running
+##   * $PRERUN     : Will show before running program
+##   * $POSTRUN    : Will show after running
+##   * $NOREDIRECT : Allows STDOUT to stream to terminal
 
 ## If the launcher is not found, then the installer directory
 ## $INSTROOT (above) will be checked to see if the instal file
@@ -135,7 +137,7 @@ Failed to find executable in $GAMEDIR
 function runGame {
 
     EXECUTABLE="$GAMEDIR/$PROGDIR"
-    [[ -z "$WINESUBDIR" ]] || EXECUTABLE="$EXECUTABLE/$WINESUBDIR"
+    [[ -z "$PROGSUBDIR" ]] || EXECUTABLE="$EXECUTABLE/$PROGSUBDIR"
     EXECUTABLE="$EXECUTABLE/$LAUNCH"
     [[ -s "$EXECUTABLE" ]] || return
     extSfx="${LAUNCH##*.}"
@@ -177,35 +179,55 @@ function runGame {
 function runExecutable {
     msg "$FgGreen" "  Running $EXECUTABLE"
     cd "$GAMEDIR/$PROGDIR";
-    ## Set terminal title:  https://unix.stackexchange.com/a/11230
+    ## If an additional subdirectory is specified, move there
+    [[ -z "$PROGSUBDIR" ]] || cd "$PROGSUBDIR"
+
     set_title "Run $PROGDIR";
-    "./$LAUNCH" &> "$LOG"
-    msg "$FgCyan" "  Launcher finished. Logfile:
-    less -S \"$LOG\"
-";
+    LogNote=""
+    if [[ -z "$NOREDIRECT" ]]; then
+        ## Capture log to file
+        "./$LAUNCH" &> "$LOG"
+        LogNote=" LogFile:\n  less -S \"$LOG\""
+    else
+        ## Log to STDOUT
+        "./$LAUNCH"
+    fi
+    msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 
 function runWine {
     msg "$FgGreen" "  Wine launch of $EXECUTABLE"
     cd "$GAMEDIR/$PROGDIR/"
     ## If an additional subdirectory is specified, move there
-    [[ -z "$WINESUBDIR" ]] || cd "$WINESUBDIR"
+    [[ -z "$PROGSUBDIR" ]] || cd "$PROGSUBDIR"
 
     set_title "Wine $PROGDIR";
-    wine "$LAUNCH" &> "$LOG"
-    msg "$FgCyan" "  Launcher finished. Logfile:
-    less -S \"$LOG\"
-";
+    LogNote=""
+    if [[ -z "$NOREDIRECT" ]]; then
+        ## Capture log to file
+        wine "$LAUNCH" &> "$LOG"
+        LogNote=" LogFile:\n  less -S \"$LOG\""
+    else
+        ## Log to STDOUT
+        wine "$LAUNCH"
+    fi
+    msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 
 function runJava {
     msg "$FgGreen" "  Running Java file \"$EXECUTABLE\""
     cd "$GAMEDIR/$PROGDIR";
-    set_title "Run $PROGDIR";
-    java -Xmx1024M -Xms1024M -jar "$LAUNCH" &> "$LOG"
-    msg "$FgCyan" "  Launcher finished. Logfile:
-    less -S \"$LOG\"
-";
+    set_title "Run Java $PROGDIR";
+    LogNote=""
+    if [[ -z "$NOREDIRECT" ]]; then
+        ## Capture log to file
+        java -Xmx1024M -Xms1024M -jar "$LAUNCH" &> "$LOG"
+        LogNote=" LogFile:\n  less -S \"$LOG\""
+    else
+        ## Log to STDOUT
+        java -Xmx1024M -Xms1024M -jar "$LAUNCH"
+    fi
+    msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 
 function installGame {

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ## Location of the executable:
-PROGDIR="Cosmochoria/linux64"
-LAUNCH="cosmochoria"
+PROGDIR="Cosmochoria"
+LAUNCH="linux64/cosmochoria"
 ## Location of the installer:
 INSTDIR="Humble Indie Bundle/Cosmochoria"
 INSTNAME='Cosmochoria_*_Linux.zip'

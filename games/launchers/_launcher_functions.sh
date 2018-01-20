@@ -27,7 +27,7 @@ INSTROOT="/abyss/Installers"
 ## $INSTNAME can be found in directory $INSTDIR. If those variables
 ## are set and the installer is found:
 ##   * If it is a .sh it will be run
-##   * If a zip/bz2/bzip2 it will be extracted
+##   * If a zip/bz2/bzip2/xz it will be extracted
 ## Additional installation variables
 ##   * $INSTRENAME : set to "foo/bar", will try to rename 'foo' to 'bar'
 ##                   The 'from' part can contain '*' wildcards
@@ -267,6 +267,9 @@ Launcher not found
     elif [[ $sfx == "gz" ]]; then
         ## gzip archive
         installGzip
+    elif [[ $sfx == "xz" ]]; then
+        ## xz archive
+        installXZ
     elif [[ $sfx == "zip" ]]; then
         ## gzip archive
         installZip
@@ -495,6 +498,21 @@ Preparing to extract:
 "
     ## Extracting Bzip: https://superuser.com/a/480951
     cmd="unzip \"$installer\""
+    ## Command literal with eval: https://stackoverflow.com/a/2355242
+    eval "$cmd"
+}
+
+function installXZ {
+    TRIEDINSTALL="XZ Archive: $installer"
+    msg "$FgMagenta" "
+Preparing to extract:
+  $installer
+"
+    ## Extracting XZ: https://askubuntu.com/a/107976
+    ## I am presuming a secondary .tar layer - do folks ever use
+    ## .xz on things that aren't tar archives?
+    
+    cmd="tar xf \"$installer\""
     ## Command literal with eval: https://stackoverflow.com/a/2355242
     eval "$cmd"
 }

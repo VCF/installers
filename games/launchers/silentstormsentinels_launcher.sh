@@ -12,6 +12,7 @@ INSTNAME='setup_silent_storm_*.exe'
 ## Installation post-processing:
 WINETARGET="Program Files (x86)/GOG.com/Silent Storm GOLD"
 INSTSAVEDIR="$WINESUBDIR/save"
+DORSYNC="yes"
 INSTICON="$PROGDIR.png"
 ## Notes:
 PRERUN="

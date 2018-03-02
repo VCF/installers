@@ -267,6 +267,9 @@ Launcher not found
     elif [[ $sfx == "gz" ]]; then
         ## gzip archive
         installGzip
+    elif [[ $sfx == "tar" ]]; then
+        ## uncompressed tar archive
+        installTar
     elif [[ $sfx == "xz" ]]; then
         ## xz archive
         installXZ
@@ -486,6 +489,20 @@ Preparing to extract:
 "
     ## Extracting Bzip: https://superuser.com/a/480951
     cmd="gzip --stdout --verbose --decompress --keep \"$installer\" $unTar"
+    ## Command literal with eval: https://stackoverflow.com/a/2355242
+    eval "$cmd"
+}
+
+function installTar {
+    ## For 'pure' TAR archives; That is, without any other compression
+    ## (weird that people do this...)
+    TRIEDINSTALL="TAR Archive: $installer"
+    msg "$FgMagenta" "
+Preparing to extract:
+  $installer
+"
+    ## Extracting Bzip: https://superuser.com/a/480951
+    cmd="tar -xvf \"$installer\""
     ## Command literal with eval: https://stackoverflow.com/a/2355242
     eval "$cmd"
 }
@@ -779,6 +796,11 @@ function customRunFunction {
 function backupGameFiles {
     ## If INSTSAVEDIR is not set, presume we have not normalized the save path
     [[ -z "$INSTSAVEDIR" ]] && return
-    msg "$BgBlue;$FgYellow" "Backing up... $SAVEDIR/$PROGDIR"
-    archiveFolder "$SAVEDIR/$PROGDIR" "GameFiles"
+    SrcFolder="$SAVEDIR/$PROGDIR"
+    msg "$BgBlue;$FgYellow" "Backing up... $SrcFolder"
+    if [[ -z "$DORSYNC" ]]; then
+        archiveFolder "$SrcFolder" "GameFiles"
+    else
+        rsyncFolder "$SrcFolder" "GameFiles"
+    fi
 }

@@ -7,9 +7,10 @@ LAUNCH="start.sh"
 INSTDIR="GOG/Factorio"
 INSTNAME='factorio_en_*.sh'
 ## Installation post-processing:
-INSTSAVEDIR="$HOME/Programs/Factorio/game/saves"
+INSTSAVEDIR="$HOME/Programs/$PROGDIR/game/saves"
+INSTICON="$PROGDIR.png"
 
 my_dir="$(dirname "$0")"
 . "$my_dir/_launcher_functions.sh"
 
-find_and_run_executable
+find_and_run_executable "$@"

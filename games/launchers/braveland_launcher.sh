@@ -9,7 +9,7 @@ LAUNCH="Braveland.x86_64"
 INSTDIR="Humble Indie Bundle/Braveland"
 INSTNAME='braveland-linux-*.tar'
 ## Installation post-processing:
-#INSTSAVEDIR="$HOME/Programs/$PROGDIR/user"
+INSTSAVEDIR="$HOME/.config/unity3d/Tortuga Team/Braveland"
 INSTICON="$PROGDIR.png"
 ## Notes:
 

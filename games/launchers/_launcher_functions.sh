@@ -186,11 +186,11 @@ function runExecutable {
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        "./$LAUNCH" &> "$LOG"
+        "./$LAUNCH" "$LAUNCHARGS" &> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        "./$LAUNCH"
+        "./$LAUNCH" "$LAUNCHARGS"
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
@@ -697,7 +697,10 @@ You may wish to normalize save file location using:
     ## Finally, put a symlink in the "expected" location pointing to
     ## the normalized one.
     ln -s "$TargDir" "$isd"
-    msg "$FgBlue" "Save files linked to standard location in $SAVEDIR"
+    msg "$FgBlue" "Save files linked to standard location in 
+  $SAVEDIR
+  Symlink in: $isd
+"
 }
 
 function fallBackPath {

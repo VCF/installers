@@ -29,13 +29,14 @@ INSTROOT="/abyss/Installers"
 ##   * If it is a .sh it will be run
 ##   * If a zip/bz2/bzip2/xz it will be extracted
 ## Additional installation variables
-##   * $INSTRENAME : set to "foo/bar", will try to rename 'foo' to 'bar'
+##   * INSTRENAME  : set to "foo/bar", will try to rename 'foo' to 'bar'
 ##                   The 'from' part can contain '*' wildcards
-##   * $INSTAPT    : will show the contents as suggested libraries
-##   * $INSTHELP   : will suggest contents as installation help source
+##   * INSTAPT     : will show the contents as suggested libraries
+##   * INSTHELP    : will suggest contents as installation help source
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
 ##   * INSTICON    : custom icon file name (basename) for launcher
 ##   * INSTFUNCTON : custom function that runs after installation
+##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation 
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -67,7 +68,10 @@ myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function launcherHelp {
     msg "$FgBlue" "\nThis is a launcher file for \"$PROGDIR\""
-    [[ -z "$INSTDIR" ]] || msg "$FgCyan" "  It can auto-install the program"
+    if [[ -n "$INSTDIR" ]]; then
+        msg "$FgCyan" "  It can auto-install the program"
+        [[ -z "$WINETARGET" ]] || msg "$FgCyan" "    ... using Wine to do so"
+    fi
     [[ -z "$INSTSAVEDIR" ]] || msg "$FgCyan" "  It will normalize save file location for you"
     msg "$FgBlue" "\nYou can pass it the following arguments:"
     msg "$FgCyan" "
@@ -152,14 +156,23 @@ function runGame {
 
     LOG="$GAMEDIR/$PROGDIR/$LOGFILE";
 
+    echo "## Launcher log file" > "$LOG"
+    echo "##   "`date` >> "$LOG"
+    echo "##   Running: $EXECUTABLE" >> "$LOG"
+
     if [[ "$extSfx" == 'exe' ]]; then
+        echo "##          : With "`wine --version` >> "$LOG"
+        echo "#################################################" >> "$LOG"
         runWine
     elif [[ -x "$EXECUTABLE" ]]; then
+        echo "#################################################" >> "$LOG"
         runExecutable
     else
         ## Not an executable. What is the extension?
         ##     https://stackoverflow.com/a/965069
         if [[ "$extSfx" == 'jar' ]]; then
+            echo `java -version` >> "$LOG"
+            echo "#################################################" >> "$LOG"
             runJava
         else
             msg "$FgRed" "  Command exists but is not executable; run:
@@ -186,7 +199,7 @@ function runExecutable {
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        "./$LAUNCH" "$LAUNCHARGS" &> "$LOG"
+        "./$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
@@ -205,7 +218,7 @@ function runWine {
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        wine "$LAUNCH" &> "$LOG"
+        wine "$LAUNCH" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
@@ -221,7 +234,7 @@ function runJava {
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        java -Xmx1024M -Xms1024M -jar "$LAUNCH" &> "$LOG"
+        java -Xmx1024M -Xms1024M -jar "$LAUNCH" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT

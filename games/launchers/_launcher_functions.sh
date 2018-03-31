@@ -245,6 +245,14 @@ function runJava {
 
 function installGame {
     TRIEDINSTALL="CHECKED"
+
+    checkOtherPackages
+
+    if [[ -n "$INSTGIT" ]]; then
+        installGit
+        return
+    fi
+    
     if [[ -z "$INSTNAME" ]]; then
         ## No information on where to find installer
         msg "$FgRed" "
@@ -294,8 +302,14 @@ Launcher not found
         failedUnknown
         return
     fi
+    finishInstall
+}
 
+function finishInstall {
+
+    ## Rename installed folder, if requested
     autoRename
+    ## Run custom post-installation function, if defined
     customInstallFunction
 
     ## Set the executable as, well, executable. Usually not needed,
@@ -480,6 +494,17 @@ I want to link:
     desktopIcon
     saveLocation
     showComments
+}
+
+function installGit {
+    TRIEDINSTALL="git archive: $INSTGIT"
+    msg "$FgMagenta" "
+Cloning git archive:
+  $INSTGIT
+"
+    cd "$GAMEDIR"
+    git clone "$INSTGIT"
+    finishInstall
 }
 
 function installBzip {
@@ -819,4 +844,42 @@ function backupGameFiles {
     else
         rsyncFolder "$SrcFolder" "GameFiles"
     fi
+}
+
+function checkOtherPackages {
+    checkAptPackages
+}
+
+function checkAptPackages {
+    chkDp=`which dpkg`
+    if [[ -z "$chkDp" ]]; then
+        ## Ignore if dpkg is not present
+        [[ -n "$APTPACKAGES" ]] && msg "$BgYelow" "
+APT packages are specified but your system does not seem to support apt
+  You may need to install the appropriate counterparts for your system:
+$APTPACKAGES
+"
+        return
+    fi
+    [[ -z "$APTPACKAGES" ]] && return # nothing required anyway
+
+    msg "$FgCyan" "Checking for system requirements..."
+    sudoAlert=""
+    ## Split string on newlines: https://stackoverflow.com/a/19772067
+    IFS=$'\n' read -rd '' -a PKGLIST <<< "$APTPACKAGES"
+    for pkgname in "${PKGLIST[@]}"; do
+        stat=`dpkg -s "$pkgname" 2> /dev/null | grep '^Status' | grep 'installed'`
+        if [[ -n "$stat" ]]; then
+            msg "$FgGreen;$BgWhite" "  Installed: $pkgname  "
+            continue
+        fi
+        ## It looks like we need to install the package
+        if [[ -z "$sudoAlert" ]]; then
+            msg "$FgMagenta" "  Some packages need to be installed - you may be prompted for your sudo password"
+            sudoAlert='Done'
+        fi
+        msg "$FgYellow;$BgWhite" "  Required: $pkgname  "
+        sudo apt-get -y install "$pkgname"
+    done
+    
 }

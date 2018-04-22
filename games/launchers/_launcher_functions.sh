@@ -71,19 +71,32 @@ cDrive=""
 
 function launcherHelp {
     msg "$FgBlue" "\nThis is a launcher file for \"$PROGDIR\""
+    helpTxt="
+      help - Show this help
+  shortcut - Will make a desktop shortcut for you"
     if [[ -n "$INSTDIR" || -n "$INSTGIT" ]]; then
         msg "$FgCyan" "  It can auto-install the program"
-        [[ -z "$WINETARGET" ]] || msg "$FgCyan" "    ... using Wine to do so"
+        if [[ -n "$WINETARGET" ]]; then
+            msg "$FgCyan" "    ... using Wine to do so"
+        helpTxt="$helpTxt
+  linkwine - Special follow up command to link wine directories"
+        elif [[ -n "$INSTGIT" ]]; then
+            msg "$FgCyan" "    ... from a git repository"
+         fi
     fi
-    [[ -z "$INSTSAVEDIR" ]] || msg "$FgCyan" "  It will normalize save file location for you"
-    msg "$FgBlue" "\nYou can pass it the following arguments:"
-    msg "$FgCyan" "
-      help - Show this help
-  shortcut - Will make a desktop shortcut for you
+    if [[ -n "$INSTSAVEDIR" ]]; then
+        msg "$FgCyan" "  It will normalize save file location for you"
+        helpTxt="$helpTxt
       save - Move save files to a known location, link to expected location
-    backup - Will backup game files, if needed and in a known location
-  linkwine - Special follow up command to link wine directories
-"
+    backup - Will backup save files, if needed and in a known location"
+    fi
+    funcSet=$(type -t INSTFUNCTION)
+    if [[ "$funcSet" == "function" ]]; then
+        helpTxt="$helpTxt
+  custfunc - Re-run post-installation custom function (use only when prompted)"
+    fi
+    msg "$FgBlue" "\nYou can pass it the following arguments:"
+    msg "$FgCyan" "$helpTxt\n"
 }
 
 function find_and_run_executable {
@@ -104,6 +117,10 @@ function find_and_run_executable {
         ## Link the wine directory to the Progams directory
         linkWine
         return
+    elif [[ $(hasParam "$1" "custfunc") ]]; then
+        ## Run the custom installation function again
+        customRunFunction
+        return
     elif [[ $(hasParam "$1" "save") ]]; then
         ## Move the save files to a standard location
         saveLocation; return
@@ -116,7 +133,7 @@ function find_and_run_executable {
     
     if [[ ! -d "$GAMEDIR" ]]; then
         msg "$FgRed" "
-Game directory not found, expected at:
+Program directory not found, expected at:
   $GAMEDIR
   This can be a symlink, if desired.
 "
@@ -723,18 +740,21 @@ You may wish to normalize save file location using:
 "
             return
         else
+            ## The path is relative to a wine directory
             wineDriveC
             isd="$cDrive/$WINETARGET/$isd"
         fi
     fi
 
     if [[ -L "$isd" ]]; then
+        ## The 'original' directory is already a link; Make sure it
+        ## already points to the normalized location we want
         tTarg=$(readlink -f "$isd")
         sTarg=$(readlink -f "$TargDir")
         if [[ "$tTarg" == "$sTarg" ]]; then
-            msg "$FgCyan" "Game files already linked from\n  $isd"
+            msg "$FgCyan" "Save files already linked from\n  $isd"
         else
-            err "Game files are linked, but not to expected location:
+            err "Save files are linked, but not to expected location:
     File location: $isd
            Target: $tTarg
   Expected Target: $sTarg
@@ -748,7 +768,7 @@ You may wish to normalize save file location using:
             BkupDir="$isd"-BKUP
             mv "$isd" "$BkupDir"
             msg "$FgYellow" "[!] Initial (empty) save directory moved to: $BkupDir"
-            msg "$FgBlue" "Using normalized game files at: $TargDir"
+            msg "$FgBlue" "Using normalized save files at: $TargDir"
         else
             ## We have not yet made the normalized location, move the
             ## initial folder there
@@ -757,7 +777,18 @@ You may wish to normalize save file location using:
         fi
     elif [[ -d "$TargDir" ]]; then
         ## Just acknowledge that we found the prior game files
-        msg "$FgBlue" "Using normalized game files at: $TargDir"
+        msg "$FgBlue" "Prior save files found at: $TargDir"
+        par=$(dirname "$isd")
+        if [[ ! -d "$par" ]]; then
+           msg "$FgRed$BgYellow" "
+However, the parent directory of the 'original' save directory does not exist:
+  $par
+Until that directory is generated, a link can not be made to the previous files
+You may need to run the program once, and possibly make an initial save.
+Once the parent exists, run:
+  $0 save
+"
+        fi
     else
         ## Neither the initial directory nor the normalized one exist
         ## - some games don't create the save folder until they're

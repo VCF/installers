@@ -40,9 +40,15 @@ Run the game at least once, then run:
   $0 custfunc
 ... to change DesiredDynamicLightQuality to a safe value.
 "
+        return
     fi
+    
     ## https://stackoverflow.com/a/11245501 # Tell sed to change the line
     sed -i '/DesiredDynamicLightQuality  2/c\DesiredDynamicLightQuality  0' "$confFile"
+    msg "$FgMagenta" "
+Updated dynamic light quality to avoid WineHQ-reported issues:
+  $(grep DesiredDynamicLightQuality "$confFile")
+"
 }
 
 

@@ -34,10 +34,17 @@ function INSTFUNCTION {
     ## https://appdb.winehq.org/objectManager.php?sClass=version&iId=20680
     wineDriveC
     confFile="$cDrive/users/$USER/Application Data/WB Games/LEGO® Harry Potter™/pcconfig.txt"
+    if [[ ! -s "$confFile" ]]; then
+        msg "$FgRed" "Configuration file is not yet available.
+Run the game at least once, then run:
+  $0 custfunc
+... to change DesiredDynamicLightQuality to a safe value.
+"
+    fi
     ## https://stackoverflow.com/a/11245501 # Tell sed to change the line
     sed -i '/DesiredDynamicLightQuality  2/c\DesiredDynamicLightQuality  0' "$confFile"
-
 }
+
 
 my_dir="$(dirname "$0")"
 . "$my_dir/_launcher_functions.sh"

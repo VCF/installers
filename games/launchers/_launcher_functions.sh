@@ -119,7 +119,8 @@ function find_and_run_executable {
         return
     elif [[ $(hasParam "$1" "custfunc") ]]; then
         ## Run the custom installation function again
-        customRunFunction
+        msg "$FgMagenta" "Re-running custom installation function..."
+        customInstallFunction
         return
     elif [[ $(hasParam "$1" "save") ]]; then
         ## Move the save files to a standard location

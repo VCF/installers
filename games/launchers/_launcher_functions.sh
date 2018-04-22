@@ -34,9 +34,11 @@ INSTROOT="/abyss/Installers"
 ##   * INSTAPT     : will show the contents as suggested libraries
 ##   * INSTHELP    : will suggest contents as installation help source
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
+##                   For Wine locations, can begin with 'drive_c/'
 ##   * INSTICON    : custom icon file name (basename) for launcher
 ##   * INSTFUNCTON : custom function that runs after installation
-##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation 
+##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
+##   * INSTTRICKS  : winetricks needed by a Windows program
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -62,13 +64,14 @@ LICENSE_GPL3="
 myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . "$myLaunchDir/../../generalUtilities/_backupFunctions.sh"
 
+cDrive=""
 
 # Testing the suffix of a file:
 # https://stackoverflow.com/a/965072
 
 function launcherHelp {
     msg "$FgBlue" "\nThis is a launcher file for \"$PROGDIR\""
-    if [[ -n "$INSTDIR" ]]; then
+    if [[ -n "$INSTDIR" || -n "$INSTGIT" ]]; then
         msg "$FgCyan" "  It can auto-install the program"
         [[ -z "$WINETARGET" ]] || msg "$FgCyan" "    ... using Wine to do so"
     fi
@@ -85,23 +88,23 @@ function launcherHelp {
 
 function find_and_run_executable {
 
-    if [[ `hasParam "$1" "run"` ]]; then
+    if [[ $(hasParam "$1" "run") ]]; then
         ## Explicit request to run the game - just move on from elif block
         ""
-    elif [[ `hasParam "$1" "help"` ]]; then
+    elif [[ $(hasParam "$1" "help") ]]; then
         ## Show help
         launcherHelp; return
-    elif [[ `hasParam "$1" "backup"` ]]; then
+    elif [[ $(hasParam "$1" "backup") ]]; then
         ## Make the shortcut
         backupGameFiles; return
-    elif [[ `hasParam "$1" "shortcut"` || `hasParam "$1" "desktop"` ]]; then
+    elif [[ $(hasParam "$1" "shortcut") || $(hasParam "$1" "desktop") ]]; then
         ## Make the shortcut
         desktopIcon; return
-    elif [[ `hasParam "$1" "linkwine"` || `hasParam "$1" "winelink"` ]]; then
+    elif [[ $(hasParam "$1" "linkwine") || $(hasParam "$1" "winelink") ]]; then
         ## Link the wine directory to the Progams directory
         linkWine
         return
-    elif [[ `hasParam "$1" "save"` ]]; then
+    elif [[ $(hasParam "$1" "save") ]]; then
         ## Move the save files to a standard location
         saveLocation; return
     elif [[ ! -z "$1" ]]; then
@@ -156,12 +159,17 @@ function runGame {
 
     LOG="$GAMEDIR/$PROGDIR/$LOGFILE";
 
+    cd "$GAMEDIR/$PROGDIR";
+    ## If an additional subdirectory is specified, move there
+    [[ -z "$PROGSUBDIR" ]] || cd "$PROGSUBDIR"
+
     echo "## Launcher log file" > "$LOG"
-    echo "##   "`date` >> "$LOG"
+    echo "##   $(date)" >> "$LOG"
+    echo "##  Location: $(pwd)" >> "$LOG"
     echo "##   Running: $EXECUTABLE" >> "$LOG"
 
     if [[ "$extSfx" == 'exe' ]]; then
-        echo "##          : With "`wine --version` >> "$LOG"
+        echo "##          : With $(wine --version)" >> "$LOG"
         echo "#################################################" >> "$LOG"
         runWine
     elif [[ -x "$EXECUTABLE" ]]; then
@@ -171,7 +179,7 @@ function runGame {
         ## Not an executable. What is the extension?
         ##     https://stackoverflow.com/a/965069
         if [[ "$extSfx" == 'jar' ]]; then
-            echo `java -version` >> "$LOG"
+            java -version >> "$LOG"
             echo "#################################################" >> "$LOG"
             runJava
         else
@@ -191,9 +199,6 @@ function runGame {
 
 function runExecutable {
     msg "$FgGreen" "  Running $EXECUTABLE"
-    cd "$GAMEDIR/$PROGDIR";
-    ## If an additional subdirectory is specified, move there
-    [[ -z "$PROGSUBDIR" ]] || cd "$PROGSUBDIR"
 
     set_title "Run $PROGDIR";
     LogNote=""
@@ -209,27 +214,24 @@ function runExecutable {
 }
 
 function runWine {
+    wineDriveC
     msg "$FgGreen" "  Wine launch of $EXECUTABLE"
-    cd "$GAMEDIR/$PROGDIR/"
-    ## If an additional subdirectory is specified, move there
-    [[ -z "$PROGSUBDIR" ]] || cd "$PROGSUBDIR"
 
     set_title "Wine $PROGDIR";
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        wine "$LAUNCH" &>> "$LOG"
+        WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        wine "$LAUNCH"
+        WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH"
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 
 function runJava {
     msg "$FgGreen" "  Running Java file \"$EXECUTABLE\""
-    cd "$GAMEDIR/$PROGDIR";
     set_title "Run Java $PROGDIR";
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
@@ -276,12 +278,17 @@ Launcher not found
         installWine
     elif [[ $sfx == "sh" ]]; then
         TRIEDINSTALL="SHELL: $installer"
-        if [[ -x "$installer" ]]; then
-            installShell
-        else
-            failedNotExecutable
-            return
+        if [[ ! -x "$installer" ]]; then
+            ## Installer isn't executable - try to fix:
+            chmod u+x "$installer"
+            if [[ -x "$installer" ]]; then
+                msg "$FgBlue" "  Updated installer to be executable..."
+            else
+                failedNotExecutable
+                return
+            fi
         fi
+        installShell
     elif [[ $sfx == "bz2" || $sfx == "bzip2" ]]; then
         ## bzip archive
         installBzip
@@ -331,16 +338,19 @@ function findInstaller {
     ## ~/ToFile; If so, use one of those.
     TryDir[0]="$HOME/Downloads"
     TryDir[1]="$HOME/ToFile"
+    TryDir[2]="$HOME/ToFile/GOG Updates/$PROGDIR"
+    TryDir[3]="$HOME/ToFile/Humble Updates/$PROGDIR"
+    TryDir[4]="$HOME/ToFile/OpenSource Updates/$PROGDIR"
     if [[ ! -z "$INSTDIR" ]]; then
         ## Also use INSTDIR as default location, if it has been set by
         ## the launcher
-        isAbsPath=`echo "$INSTDIR" | grep '^/'`
+        isAbsPath=$(echo "$INSTDIR" | grep '^/')
         if [[ -z "$isAbsPath" ]]; then
             ## Appears to be a relative path
-            TryDir[2]="$INSTROOT"/"$INSTDIR"
+            TryDir[5]="$INSTROOT"/"$INSTDIR"
         else
             ## Appears to be an absolute path
-            TryDir[2]="$INSTDIR"
+            TryDir[5]="$INSTDIR"
         fi
     fi
 
@@ -348,7 +358,7 @@ function findInstaller {
         ## List by modified date, if there are more than one match
         ## take the most recent one. Allows use of pattern eg:
         ##    myGame_*.sh -> myGame_1.3.sh, myGame_1.4.2.sh etc
-        installer=`ls -1t "$dir"/$INSTNAME 2>/dev/null | head -n1 `
+        installer=$(ls -1t "$dir"/$INSTNAME 2>/dev/null | head -n1)
         [[ -z "$installer" ]] || break # Take first example we find
     done
     
@@ -364,13 +374,13 @@ Could not find installer '$INSTNAME' in:
 function determineSuffix {
     ##  Lower case in bash: https://stackoverflow.com/a/2264537
     ## Parameter Expansion: https://stackoverflow.com/a/965069
-    sfx=`echo "${installer##*.}" | tr '[:upper:]' '[:lower:]'`
+    sfx=$(echo "${installer##*.}" | tr '[:upper:]' '[:lower:]')
     ## Also see if this looks like a TAR archive
-    unTar=`isTarArchive "$installer"`
+    unTar=$(isTarArchive "$installer")
 }
 
 function isTarArchive {
-    isTar=`echo "$1" | grep -i '\.tar\.'`
+    isTar=$(echo "$1" | grep -i '\.tar\.')
     unTarLine=""
     [[ -z "$isTar" ]] || unTarLine=" | tar -xvf -"
     echo "$unTarLine"
@@ -394,35 +404,61 @@ Preparing to install:
   $installer
   If asked for a location, use: $GAMEDIR
            Subfolder should be: $PROGDIR
+  Do not let the installer create a launcher, one will be made for you.
 "
-    $installer
+    "$installer"
+}
+
+function wineDriveC {
+    ## Find the location of the "C:" drive in the current Wine
+    ## prefix. If it is not found, create the prefix.
+    [[ -n "$cDrive" ]] && return 0 # Run this method just once
+    
+    ## https://www.tldp.org/LDP/abs/html/parameter-substitution.html
+    winePfx="${WINEPREFIX:-$HOME/.wine}"
+    wineArch="${WINEARCH:-win32}"
+    cDrive="$winePfx/drive_c"
+    if [[ ! -d "$cDrive" ]]; then
+        msg "$FgCyan" "
+Establishing new Wine Prefix at:
+  $winePfx
+  Just click 'OK' when the dialog appears."
+        WINEARCH="$wineArch" WINEPREFIX="$winePfx" winecfg
+        msg "$FgBlue" "  Done."
+    fi
+    msg "$FgGreen" "Wine Prefix: $winePfx   ($wineArch)"
 }
 
 function installWine {
-    Pwd=`pwd`
-    cDrive="$GAMEDIR/drive_c"
-    if [[ ! -d "$cDrive" ]]; then
-        defLoc="$HOME/.wine/drive_c"
-        msg "$FgRed" "
-Wine's C:/ drive is expected to be at:
-  $cDrive
-  It was not found, and is likely here:
-    $defLoc
-  Set up symlinks between the two locations, that is one of:
-    mv  \"$defLoc\" \"$cDrive\" && ln -s  \"$cDrive\" \"$defLoc\"
-  or:
-    ln -s \"$defLoc\"  \"$cDrive\"
+    Pwd=$(pwd)
+    wineDriveC
+
+    if [[ -n "$INSTTRICKS" ]]; then
+        ## Request to make some winetricks available
+        msg "$FgCyan" "
+Installing requested winetricks:
+  $INSTTRICKS
 "
-        return
+        wt=$(which winetricks)
+        if [[ -z "$wt" ]]; then
+            echo "$FgRed" "
+The wine helper application `winetricks` does not appear to be installed
+  Please install 'winetricks' from your repository
+"
+            exit
+        fi
+        WINEARCH="$wineArch" WINEPREFIX="$winePfx" winetricks $INSTTRICKS
+        msg "$FgBlue" "  Done."
     fi
 
-    ## Wine wants files to be 'on' drive_c. For GOG, the installer is
-    ## often a small exe plus one or more .bin files. So we will make
-    ## a temporary symlink to the installer directory in C:/
+    ## Wine wants files to be 'on' drive_c (chroot/jailed?). For GOG,
+    ## the installer is often a small exe plus one or more .bin
+    ## files. So we will make a temporary symlink to the installer
+    ## directory in C:/
     cd "$cDrive"
     tmpLnk="TempLinkForInstallation"
-    instDir=`dirname "$installer"`
-    instExe=`basename "$installer"`
+    instDir=$(dirname "$installer")
+    instExe=$(basename "$installer")
     ln -s "$instDir" "$tmpLnk"
     # Now run the installer
     msg "$FgMagenta" "
@@ -430,7 +466,7 @@ Launching installer in wine:
   $installer
   Allow installer to use default installation directories
 "
-    wine "$tmpLnk/$instExe"
+    WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$tmpLnk/$instExe"
     rm "$tmpLnk" # Remove the symlink
     linkWine
     
@@ -438,18 +474,7 @@ Launching installer in wine:
 }
 
 function linkWine {
-    cDrive="$GAMEDIR/drive_c"
-    if [[ -z "$WINETARGET" ]]; then
-        msg "$FgRed" "
-The launcher has not set the \$WINETARGET variable
-  This defines where the file should be created after wine runs the installer
-  * Inspect c_drive to determine where the program has been installed
-  * Set WINETARGET='where/you/found/it'
-  * run: $0 linkwine
-  Until this is updated, the program will not run (at least by the launcher)
-"
-        return
-    fi
+    wineDriveC
     
     wineTarg="$cDrive/$WINETARGET"
     gp="$GAMEDIR/$PROGDIR"
@@ -464,8 +489,8 @@ Could not find the wine target directory at:
 
     if [[ -L "$gp" ]]; then
         ## The standardized program directory is already a symlink
-        chk=`readlink -f "$gp"`
-        wtc=`readlink -f "$wineTarg"`
+        chk=$(readlink -f "$gp")
+        wtc=$(readlink -f "$wineTarg")
         if [[ "$chk" == "$wtc" ]]; then
             msg "$FgCyan" "Symlink ok: $gp"
         else
@@ -576,8 +601,9 @@ function failedNotExecutable {
     msg "$FgRed" "
 Found installer:
   $installer
-  ... but it is not executable. Run:
-    chmod u+x "$installer"
+  ... but it is not executable, and I failed to make it so.
+  Read-only file system? You're going to need to run:
+    chmod u+x '$installer'
 "
 }
 
@@ -602,7 +628,7 @@ You may need to install additional libraries / software using:
 }
 
 function autoRename {
-    [[ -z "INSTRENAME" ]] && return
+    [[ -z "$INSTRENAME" ]] && return
     ## A variable has been set to rename something. This can be useful
     ## when an archive has a generic name like 'linux' as the
     ## top-level folder
@@ -613,7 +639,7 @@ function autoRename {
     reTo="${RenameBits[1]}"
     ## If 'From' has a wildcard, do a listing with it
     ##   Pattern matching: https://stackoverflow.com/a/231298
-    [[ "$reFrom" =~ '*' ]] && reFrom=`ls -1td $reFrom | head -n1`
+    [[ "$reFrom" =~ '*' ]] && reFrom=$(ls -1td $reFrom | head -n1)
     
     if [[ -z "$reFrom" || -z "$reTo" ]]; then
         msg "$FgRed" "
@@ -657,10 +683,10 @@ Rename request
 
 function countdown {
     sec="$1"
-    while [[ "$sec" > 0 ]]; do
+    while [[ "$sec" -gt 0 ]]; do
         printf "Waiting: \e[1;33m%3d\e[0m\r" "$sec"
         ## Bash math: https://unix.stackexchange.com/a/93030
-        sec=`expr "$sec" - 1`
+        sec=$(expr "$sec" - 1)
         sleep 1
     done
     echo "                    "
@@ -675,6 +701,12 @@ You may wish to normalize save file location using:
         return
     fi
 
+    if [[ $INSTSAVEDIR =~ ^drive_c ]]; then
+        ## locations starting with 'drive_c' need to be normalized to
+        ## the requested Wine prefix
+        wineDriveC
+        INSTSAVEDIR=$(sed 's#^drive_c#'"$cDrive"'#' <<< "$INSTSAVEDIR")
+    fi
     ## If this variable is defined, it represents a save file location
     ## that needs to be moved to a standardized location
     [[ -d "$SAVEDIR" ]] || mkdir -p "$SAVEDIR"
@@ -691,13 +723,14 @@ You may wish to normalize save file location using:
 "
             return
         else
-            isd="$GAMEDIR/drive_c/$WINETARGET/$isd"
+            wineDriveC
+            isd="$cDrive/$WINETARGET/$isd"
         fi
     fi
 
     if [[ -L "$isd" ]]; then
-        tTarg=`readlink -f "$isd"`
-        sTarg=`readlink -f "$TargDir"`
+        tTarg=$(readlink -f "$isd")
+        sTarg=$(readlink -f "$TargDir")
         if [[ "$tTarg" == "$sTarg" ]]; then
             msg "$FgCyan" "Game files already linked from\n  $isd"
         else
@@ -774,7 +807,7 @@ function desktopIcon {
         fallBackPath "$icon" "$iBkup" "$iSrc"
         if [[ -z "$fbp" ]]; then
             ## Failed to find the icon, use the default
-            $icon="$defIcon"
+            icon="$defIcon"
             iPath="$iDir/$icon"
             fallBackPath "$icon" "$iBkup" "$iSrc"
         fi
@@ -782,8 +815,8 @@ function desktopIcon {
     fi
 
     ## I keep ending up with weird executables...
-    exeDir=`readlink -f "$myLaunchDir"` # Launcher directory
-    exeExe=`basename "$0"`         # Launcher script name
+    exeDir=$(readlink -f "$myLaunchDir") # Launcher directory
+    exeExe=$(basename "$0")              # Launcher script name
     Exec="$exeDir/$exeExe" # Absolute launcher path, de-linkified
 
     ## konsole is *REFUSING* to run in the context of a launcher, at
@@ -821,14 +854,14 @@ function customInstallFunction {
     ## installation function has been defined
 
     ## Check if function is set: https://stackoverflow.com/a/85903
-    funcSet=`type -t INSTFUNCTION`
+    funcSet=$(type -t INSTFUNCTION)
     [[ "$funcSet" == "function" ]] || return
 
     INSTFUNCTION
 }
 
 function customRunFunction {
-    funcSet=`type -t RUNFUNCTION`
+    funcSet=$(type -t RUNFUNCTION)
     [[ "$funcSet" == "function" ]] || return
 
     RUNFUNCTION
@@ -851,7 +884,7 @@ function checkOtherPackages {
 }
 
 function checkAptPackages {
-    chkDp=`which dpkg`
+    chkDp=$(which dpkg)
     if [[ -z "$chkDp" ]]; then
         ## Ignore if dpkg is not present
         [[ -n "$APTPACKAGES" ]] && msg "$BgYelow" "
@@ -868,7 +901,7 @@ $APTPACKAGES
     ## Split string on newlines: https://stackoverflow.com/a/19772067
     IFS=$'\n' read -rd '' -a PKGLIST <<< "$APTPACKAGES"
     for pkgname in "${PKGLIST[@]}"; do
-        stat=`dpkg -s "$pkgname" 2> /dev/null | grep '^Status' | grep 'installed'`
+        stat=$(dpkg -s "$pkgname" 2> /dev/null | grep '^Status' | grep 'installed')
         if [[ -n "$stat" ]]; then
             msg "$FgGreen;$BgWhite" "  Installed: $pkgname  "
             continue

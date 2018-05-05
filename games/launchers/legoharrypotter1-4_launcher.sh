@@ -15,6 +15,7 @@ INSTNAME='setup_lego_harry_potter_1-4_*.exe'
 wineBits="32"
 WINEPREFIX="$HOME/Wine$wineBits"
 WINEARCH="win$wineBits"
+INSTTRICKS="xna40"
 
 ## Installation post-processing:
 ## Capitalization may vary:
@@ -27,7 +28,12 @@ PRERUN="
 WineHQ Platinum
   https://appdb.winehq.org/objectManager.php?sClass=application&iId=11718
 
-  Requires a 32 bit Wine prefix. Works in wine-3.0
+  Requires xna40 (.NET Framework)
+    Could not get xna40 to install with winetricks on wine-3.0 !
+      With neither Mint 18.3 nor Ubuntu 16.04
+    Used another game installer (SotS The Pit) to leverage it's .NET installer
+
+  Likely requires a 32-bit Wine prefix, if for no other reason to install .NET
 "
 
 function INSTFUNCTION {

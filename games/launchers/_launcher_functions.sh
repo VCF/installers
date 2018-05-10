@@ -31,12 +31,14 @@ INSTROOT="/abyss/Installers"
 ## Additional installation variables
 ##   * INSTRENAME  : set to "foo/bar", will try to rename 'foo' to 'bar'
 ##                   The 'from' part can contain '*' wildcards
+##   * APTPACKAGES : Will install the listed pacakges as needed, via apt
 ##   * INSTAPT     : will show the contents as suggested libraries
 ##   * INSTHELP    : will suggest contents as installation help source
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
 ##                   For Wine locations, can begin with 'drive_c/'
 ##   * INSTICON    : custom icon file name (basename) for launcher
-##   * INSTFUNCTON : custom function that runs after installation
+##   * INSTGIT     : A URL to a git repository to clone
+##   * INSTFUNCTON : custom function that runs AFTER installation
 ##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
 ##   * INSTTRICKS  : winetricks needed by a Windows program
 
@@ -550,6 +552,32 @@ Cloning git archive:
     finishInstall
 }
 
+function install_git_custom {
+    ## Clone a repository if it's not already there
+    gitUser="$1"  
+    gitRepo="$2"
+    gitUrl="${3:-https://github.com}"
+    gitLoc="${4:-$gitRepo}"
+    gitArgs="$5"
+    ## For example, for "https://megarepo.com/billy/flyMice.git"
+    ##   $1 = The user/account = "billy"
+    ##   $2 = The repository   = "flyMice"
+    ##   $3 = The hosting site = "https://megarepo.com"
+    ##   $4 = Directory to clone to = "flyMice" (default repo name)
+    ##   $5 = Optional arguments to pass to git
+    if [[ -d "$gitLoc" ]]; then
+        msg "$FgCyan" "Repo $gitUser/$gitRepo already cloned"
+        return
+    fi
+    msg "$FgMagenta" "Cloning repository $gitUser/$gitRepo"
+    git clone $gitArgs "$gitUrl/$gitUser/${gitRepo}.git" "$gitLoc"
+    if [[ -d "$gitLoc" ]]; then
+        msg "$FgGreen" "  Done."
+    else
+        msg "$FgRed;$BgYellow" "  Failed to find expected directory $gitLoc  "
+    fi
+}
+
 function installBzip {
     TRIEDINSTALL="BZIP2 Archive: $installer"
     msg "$FgMagenta" "
@@ -598,6 +626,41 @@ Preparing to extract:
     cmd="unzip \"$installer\""
     ## Command literal with eval: https://stackoverflow.com/a/2355242
     eval "$cmd"
+}
+
+function install_zip_custom {
+    ## Unzip a file to a specified location
+    ##   $1 = zip source file or URL
+    ##   $2 = Optional directory to unpack in
+    ##   $3 = Name of extracted folder, if not matching zip archive name
+    srcFile="$1"
+    outDir="${2:-.}"
+    ## https://stackoverflow.com/a/2664746 - extract basename without suffix
+    base=${srcFile##*/}
+    base=${base%.zip}
+    actualName="${3:-$base}"
+    expect="$outDir/$actualName"
+
+    if [[ -d "$expect" ]]; then
+        ## Directory is there, we'll presume it's already done
+        msg "$FgCyan" "Zip archive $base has already been extracted"
+        return
+    fi
+    if [[ "$srcFile" =~ "http" ]]; then
+        ## Presume this is a remote URL
+        tmp=$(tempfile).zip
+        curl "$srcFile" --output "$tmp"
+        srcFile="$tmp"
+    fi
+
+    msg "$FgMagenta" "Extracting archive: $1"
+    unzip "$srcFile" -d "$outDir"
+    if [[ -d "$expect" ]]; then
+        ## Apparent success
+        msg "$FgGreen" "  Extracted to $outDir"
+    else
+        msg "$FgRed;$BgYellow" "  Failed to find expected directory $expect  "
+    fi
 }
 
 function installXZ {

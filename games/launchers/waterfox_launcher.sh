@@ -16,7 +16,7 @@ PRERUN="Waterfox Firefox fork
 "
 
 my_dir="$(dirname "$0")"
-xpiDir="$my_dir/PaleMoon"
+xpiDir="$my_dir/PreWebExtensionsXPIs"
 . "$my_dir/_launcher_functions.sh"
 
 function INSTFUNCTION {
@@ -48,6 +48,9 @@ I failed to find the default profile in:
 "
         ln -s "$defProf" "$stndProf"
     fi
+
+    ## Make sure the extensions directory is created
+    mkdir -p "$stndProf/extensions"
 
     ## Copy over extensions
     targDir="$stndProf/extensions"

@@ -55,6 +55,8 @@ The core addons I consider critical are:
   GreaseMonkey, and can not be managed as simple files.
 * [Classic Theme Restorer][CTR] - Undo the forced UI changes brought
   by Australis.
+* [Tab Groups][TabGroups] - Ok, not really 'critical', but very handy
+  for managing a large number of tabs
 
 #### Compatible options exist for FF57+ but with caveats
 
@@ -91,6 +93,7 @@ The core addons I consider critical are:
 [NoScript]: https://addons.mozilla.org/en-US/firefox/addon/noscript/
 [GreaseMonkey]: https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/
 [CTR]: https://addons.mozilla.org/en-US/firefox/addon/classicthemerestorer/
+[TabGroups]: https://addons.mozilla.org/en-US/firefox/addon/tab-groups-panorama/
 [Australis]: https://blog.mozilla.org/ux/2013/11/australis-is-landing-in-firefox-nightly/
 [TamperMonkey]: https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
 [CtrlQ]: https://addons.mozilla.org/en-us/firefox/addon/disable-ctrl-q-shortcut/

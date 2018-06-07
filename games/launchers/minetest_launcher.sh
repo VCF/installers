@@ -41,8 +41,8 @@ function INSTFUNCTION {
     ## Basic game
     install_git_custom "minetest" "minetest_game" "" \
                        "games/minetest_game" "--depth 1"
-    ## Reasonably good modules
-    
+
+    ## Reasonably good games
     install_zip_custom "https://codeload.github.com/minetest-LOTR/Lord-of-the-Test/zip/v1.1.0" "games" "Lord-of-the-Test-1.1.0"
     install_git_custom "D00Med" "LegendofMinetest" "" "games/LegendofMinetest"
     install_git_custom "D00Med" "farlands"         "" "games/farlands"
@@ -54,6 +54,12 @@ function INSTFUNCTION {
     install_git_custom "azekillDIABLO" "Voxellar"  "" "games/Voxellar"
     install_git_custom "minetest-technic" "technic_game" \
                        "" "games/technic_game" "--recursive"
+
+    ## Nice mods
+    install_git_custom "minetest-mods" "technic"   "" "mods/technic"
+    install_git_custom "minetest-mods" "anvil"     "" "mods/anvil"
+    install_git_custom "minetest-mods" "wielded_light" "" "mods/wielded_light"
+
     
     ## Compile
     if [[ -s "$LAUNCH" ]]; then

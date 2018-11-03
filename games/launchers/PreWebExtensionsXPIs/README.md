@@ -60,10 +60,6 @@ The core addons I consider critical are:
 
 #### Compatible options exist for FF57+ but with caveats
 
-* [Stylish][Stylish] - Excellent user-space CSS styles manager. A good
-  WebExtensions replacement exists ([Stylus][Stylus]), but it's not
-  compatible with Pale Moon. Stylish also utilizes a SQLite database
-  that I find easier to manage with file-based CSS styles.
 * [NoScript][NoScript] - Must-have security suite (blacklist). A
   WebExtension version is available, but it lacks many of the features
   present in the old extensions.
@@ -73,10 +69,26 @@ The core addons I consider critical are:
 
 #### Options exist for older and newer versions of Firefox
 
+* [Stylus][Stylus] - Excellent user-space CSS styles manager. Did not
+  work on Palemoon, but I've given up on PM.
 * [uBlock Origin][uBlock] - A very nice ad blocker.
 * [uMatrix][uMatrix] - Powerful firewall-like security tool that
   allows fine-grained control of what resources a web page can access
 * [Disable Ctrl-Q][CtrlQ] - Because I seem to hit it at the worst moment
+
+#### Ya gotta' be kidding me
+
+[Stylish][Stylish] was purchased from its developer by SimilarWeb, an
+analytics platform. The new owners added code that sent both the full
+browsing history and a unique identifier back to their servers:
+
+* [Major Stylish add-on changes in regards to privacy][StylishGH] (ghacks, first report)
+* ["Stylish" browser extension steals all your internet history][StylishRH] (Robert Heaton)
+* [Chrome, Firefox pull very unstylish Stylish invasive browser plugin][StylishElReg] (The Register)
+* [2 Million Users Impacted by New Data Collection Policy in Stylish Browser Add-On][StylishBC] (BleepingComputer)
+
+Styl__us__ is working fine in Firefox, Waterfox and Tor, so I'm
+standardizing on it across platforms.
 
 [FF57]: https://blog.mozilla.org/addons/2017/09/28/webextensions-in-firefox-57/
 [AMO]: https://addons.mozilla.org/en-US/firefox/
@@ -99,3 +111,7 @@ The core addons I consider critical are:
 [CtrlQ]: https://addons.mozilla.org/en-us/firefox/addon/disable-ctrl-q-shortcut/
 [CE]: https://addons.mozilla.org/en-US/firefox/addon/cookies-exterminator/
 [SDC]: https://addons.mozilla.org/en-US/firefox/addon/self-destructing-cookies/
+[StylishGH]: https://www.ghacks.net/2017/01/04/major-stylish-add-on-changes-in-regards-to-privacy/
+[StylishBC]: https://www.bleepingcomputer.com/news/software/2-million-users-impacted-by-new-data-collection-policy-in-stylish-browser-add-on/
+[StylishElReg]: https://www.theregister.co.uk/2018/07/05/browsers_pull_stylish_but_invasive_browser_extension/
+[StylishRH]: https://robertheaton.com/2018/07/02/stylish-browser-extension-steals-your-internet-history/

@@ -966,10 +966,11 @@ function backupGameFiles {
     ## If INSTSAVEDIR is not set, presume we have not normalized the save path
     [[ -z "$INSTSAVEDIR" ]] && return
     SrcFolder="$SAVEDIR/$PROGDIR"
-    msg "$BgBlue;$FgYellow" "Backing up... $SrcFolder"
     if [[ -z "$DORSYNC" ]]; then
+        msg "$BgBlue;$FgYellow" "Backing up... $SrcFolder"
         archiveFolder "$SrcFolder" "GameFiles"
     else
+        msg "$BgBlue;$FgYellow" "Synchronizing... $SrcFolder"
         rsyncFolder "$SrcFolder" "GameFiles"
     fi
 }

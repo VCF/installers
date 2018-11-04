@@ -36,12 +36,14 @@ INSTROOT="/abyss/Installers"
 ##   * INSTHELP    : will suggest contents as installation help source
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
 ##                   For Wine locations, can begin with 'drive_c/'
+##                   'NONE' indicates no dir exists, don't nag about it
 ##   * INSTICON    : custom icon file name (basename) for launcher
 ##   * INSTGIT     : A URL to a git repository to clone
 ##   * INSTFUNCTON : custom function that runs AFTER installation
 ##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
 ##   * INSTTRICKS  : winetricks needed by a Windows program
 ##   * NOTINTERM   : Do not run program in terminal
+##   * NOAUTOBACK  : Do not automatically backup the save files
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -92,6 +94,9 @@ function launcherHelp {
         helpTxt="$helpTxt
       save - Move save files to a known location, link to expected location
     backup - Will backup save files, if needed and in a known location"
+        [[ -n "$NOAUTOBACK" ]] &&         helpTxt="$helpTxt
+             Backups must be run manually - $NOAUTOBACK"
+
     fi
     funcSet=$(type -t INSTFUNCTION)
     if [[ "$funcSet" == "function" ]]; then
@@ -208,8 +213,14 @@ function runGame {
     chmod u+x \"$EXECUTABLE\""
         fi
     fi
-
-    backupGameFiles # Backup files to server, if save path is known
+    
+    ## Backup files to server, if save path is known and NoAutoBackup
+    ## flag is not set
+    if [[ -z "$NOAUTOBACK" ]]; then
+        backupGameFiles
+    else
+        msg "$FgYellow" "  Automatic backup suppressed: $NOAUTOBACK"
+    fi
 
     ## Show any post-run messages:
     [[ -z "$POSTRUN" ]] || msg "$FgMagenta" "$POSTRUN"

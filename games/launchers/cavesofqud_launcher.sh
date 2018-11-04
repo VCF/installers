@@ -8,6 +8,7 @@ INSTDIR="GOG/Caves of Qud"
 INSTNAME='caves_of_qud_*.sh'
 ## Installation post-processing:
 INSTSAVEDIR="$HOME/.config/unity3d/Freehold Games/CavesOfQud/Saves"
+NOAUTOBACK="Backup eventually takes a long time"
 INSTICON="$PROGDIR.jpg"
 ## Notes:
 

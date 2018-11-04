@@ -6,13 +6,14 @@
 PROGDIR="Tor"
 LAUNCH="start-tor-browser.desktop"
 ## Location of the installer:
-INSTDIR="Linux"
 if [[ -z "$(uname -m | grep x86_64)" ]]; then
     ## 32-bit
     INSTNAME='tor-browser-linux32-*_en-US.tar.xz'
+    INSTDIR="Linux/Tor/32-bit"
 else
     ## 65-bit
     INSTNAME='tor-browser-linux64-*_en-US.tar.xz'
+    INSTDIR="Linux/Tor"
 fi
 ## No save files involved:
 INSTSAVEDIR='NONE'

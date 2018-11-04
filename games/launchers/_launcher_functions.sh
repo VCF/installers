@@ -41,6 +41,7 @@ INSTROOT="/abyss/Installers"
 ##   * INSTFUNCTON : custom function that runs AFTER installation
 ##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
 ##   * INSTTRICKS  : winetricks needed by a Windows program
+##   * NOTINTERM   : Do not run program in terminal
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -86,7 +87,7 @@ function launcherHelp {
             msg "$FgCyan" "    ... from a git repository"
          fi
     fi
-    if [[ -n "$INSTSAVEDIR" ]]; then
+    if [[ -n "$INSTSAVEDIR" && "$INSTSAVEDIR" != 'NONE' ]]; then
         msg "$FgCyan" "  It will normalize save file location for you"
         helpTxt="$helpTxt
       save - Move save files to a known location, link to expected location
@@ -782,6 +783,10 @@ You may wish to normalize save file location using:
         return
     fi
 
+    ## Just a flag for no save location being set - prevents the above
+    ## message from being emitted
+    [[ "$INSTSAVEDIR" == 'NONE' ]] && return
+
     if [[ $INSTSAVEDIR =~ ^drive_c ]]; then
         ## locations starting with 'drive_c' need to be normalized to
         ## the requested Wine prefix
@@ -914,18 +919,21 @@ function desktopIcon {
     exeExe=$(basename "$0")              # Launcher script name
     Exec="$exeDir/$exeExe" # Absolute launcher path, de-linkified
 
-    ## konsole is *REFUSING* to run in the context of a launcher, at
-    ## least in KDE. This causes the launcher to fail when
-    ## 'terminal=true'. So I am instead setting Exec to open
-    ## gnome-terminal and run the script there. This seems to have
-    ## been an issue for a while, with no clear solution:
-    ##  https://forums.linuxmint.com/viewtopic.php?t=231043
+    if [[ -z "$NOTINTERM" ]]; then
+        ## konsole is *REFUSING* to run in the context of a launcher, at
+        ## least in KDE. This causes the launcher to fail when
+        ## 'terminal=true'. So I am instead setting Exec to open
+        ## gnome-terminal and run the script there. This seems to have
+        ## been an issue for a while, with no clear solution:
+        ##  https://forums.linuxmint.com/viewtopic.php?t=231043
+        Exec="gnome-terminal -e $Exec"
+    fi
 
     ## https://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
     echo "[Desktop Entry]
 Name=$PROGDIR
 Comment=Launch $PROGDIR
-Exec=gnome-terminal -e $Exec
+Exec=$Exec
 Type=Application
 #Terminal=true
 Path=$GAMEDIR/$PROGDIR

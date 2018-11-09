@@ -116,7 +116,7 @@ function find_and_run_executable {
         ## Show help
         launcherHelp; return
     elif [[ $(hasParam "$1" "backup") ]]; then
-        ## Make the shortcut
+        ## Run a backup
         backupGameFiles; return
     elif [[ $(hasParam "$1" "shortcut") || $(hasParam "$1" "desktop") ]]; then
         ## Make the shortcut

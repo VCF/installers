@@ -7,7 +7,7 @@ LAUNCH="start.sh"
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='deep_sky_derelicts_*.sh'
 ## Installation post-processing:
-INSTSAVEDIR="$HOME/.config/unity3d/Snowhound/Deep\ Sky\ Derelicts"
+INSTSAVEDIR="$HOME/.config/unity3d/Snowhound/Deep Sky Derelicts"
 INSTICON="$PROGDIR.jpg"
 ## Notes:
 

@@ -232,16 +232,17 @@ function runGame {
 
 function runExecutable {
     msg "$FgGreen" "  Running $EXECUTABLE"
+    [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
 
     set_title "Run $PROGDIR";
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        "./$LAUNCH" $LAUNCHARGS &>> "$LOG"
+        "./$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        "./$LAUNCH" $LAUNCHARGS
+        "./$LAUNCH" "$LAUNCHARGS"
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
@@ -249,7 +250,7 @@ function runExecutable {
 function runWine {
     wineDriveC
     msg "$FgGreen" "  Wine launch of $EXECUTABLE"
-
+    [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
     set_title "Wine $PROGDIR";
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
@@ -267,15 +268,18 @@ function runWine {
 
 function runJava {
     msg "$FgGreen" "  Running Java file \"$EXECUTABLE\""
+    [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
+
     set_title "Run Java $PROGDIR";
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        java -Xmx1024M -Xms1024M -jar "$LAUNCH" &>> "$LOG"
+        java -Xmx1024M -Xms1024M -jar "$LAUNCH" \
+             "$LAUNCHARGS" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        java -Xmx1024M -Xms1024M -jar "$LAUNCH"
+        java -Xmx1024M -Xms1024M -jar "$LAUNCH" "$LAUNCHARGS"
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }

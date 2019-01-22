@@ -11,6 +11,7 @@ INSTROOT="/abyss/Installers"
 
 ##    $PROGDIR - The first-level subdirectory of $GAMEDIR
 ##    $LAUNCH  - The name of the executable (can include additional subdirs)
+## $LAUNCHARGS - Optional arguments to pass to the executable
 ## $PROGSUBDIR - Optional subdirectory. Used to set initial path of run
 
 ## If the file is found:
@@ -253,11 +254,13 @@ function runWine {
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH" &>> "$LOG"
+        WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
+                wine "$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH"
+        WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
+                wine "$LAUNCH" "$LAUNCHARGS"
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
@@ -498,7 +501,8 @@ Launching installer in wine:
   $installer
   Allow installer to use default installation directories
 "
-    WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$tmpLnk/$instExe"
+    WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
+            wine "$tmpLnk/$instExe"
     rm "$tmpLnk" # Remove the symlink
     linkWine
     

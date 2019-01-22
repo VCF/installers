@@ -6,6 +6,8 @@ my_dir="$(dirname "$0")"
 ## Location of the executable:
 PROGDIR="Subnautica"
 LAUNCH="Steam.exe"
+## https://store.steampowered.com/app/264710/Subnautica/
+LAUNCHARGS="-no-cef-sandbox -applaunch 264710 -force-glcore45"
 
 ## Location of the installer:
 INSTDIR="Other/Steam"

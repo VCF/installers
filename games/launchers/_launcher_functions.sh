@@ -913,7 +913,18 @@ function desktopIcon {
     dtDir="$HOME/Desktop" # For .desktop files
     mkdir -p "$dtDir"
     dt="$dtDir/$PROGDIR".desktop
-    [[ -s "$dt" ]] && return  # Do nothing else if it is already there
+    if [[ -s "$dt" ]]; then
+        ## Do nothing else if it is already there ... unless the
+        ## launcher was made by some other program
+        myself=$(basename "$0")
+        isOk=$(grep "$myself" "$dt")
+        ## If the launcher refers to the launch script, move on
+        [[ -n "$isOk" ]] && return
+        ## Otherwise, mv this elsewhere
+        dtBkDir="$dtDir/Original Launchers"
+        mkdir -p "$dtBkDir"
+        mv "$dt" "$dtBkDir"
+    fi
     iDir="$SAVEDIR/.icons"    # Local icon store
     iSrc="/abyss/Media/iconImages"     # Primary storage
     iBkup="/abyss/Common/ToFile/icons" # But check here first

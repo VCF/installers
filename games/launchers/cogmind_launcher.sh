@@ -9,9 +9,15 @@ LAUNCH="COGMIND.exe"
 INSTDIR="Indie/CogMind"
 INSTNAME='COGMIND_*.zip'
 ## Installation post-processing:
-INSTRENAME='COGMIND */'$PROGDIR
+INSTRENAME='COGMIND?*/'$PROGDIR
 INSTSAVEDIR="$HOME/Programs/$PROGDIR/user"
 INSTICON="$PROGDIR.png"
+
+## Wine configuration:
+wineBits="32"
+WINEPREFIX="$HOME/Wine$wineBits"
+WINEARCH="win$wineBits"
+
 ## Notes:
 
 

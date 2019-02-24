@@ -196,7 +196,9 @@ function runGame {
     echo "##   Running: $EXECUTABLE" >> "$LOG"
 
     if [[ "$extSfx" == 'exe' ]]; then
+        wineDriveC
         echo "##          : With $(wine --version)" >> "$LOG"
+        echo "##          : Architecture $wineArch Prefix $winePfx" >> "$LOG"
         echo "#################################################" >> "$LOG"
         runWine
     elif [[ -x "$EXECUTABLE" ]]; then
@@ -249,19 +251,34 @@ function runExecutable {
 
 function runWine {
     wineDriveC
-    msg "$FgGreen" "  Wine launch of $EXECUTABLE"
+    msg "$FgGreen" "  Wine launch of $LAUNCH
+    in $(pwd)"
     [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
     set_title "Wine $PROGDIR";
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
-                wine "$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
+
+        ## OMG. Some programs are confounded by an empty
+        ## parameter. That is, it is not always safe to include
+        ## "$LAUNCHARGS" if $LAUNCHARGS is empty, because the empty ""
+        ## will upset the executable (eg Cogmind). So I need another
+        ## ifelse block
+        if [[ -n "$LAUNCHARGS" ]]; then
+            WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
+                    wine "$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
+        else
+            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH" &>> "$LOG"
+        fi
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
-                wine "$LAUNCH" "$LAUNCHARGS"
+        if [[ -n "$LAUNCHARGS" ]]; then
+            WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
+                    wine "$LAUNCH" "$LAUNCHARGS"
+        else
+            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH"
+        fi
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
@@ -465,7 +482,7 @@ Establishing new Wine Prefix at:
         WINEARCH="$wineArch" WINEPREFIX="$winePfx" winecfg
         msg "$FgBlue" "  Done."
     fi
-    msg "$FgGreen" "Wine Prefix: $winePfx   ($wineArch)"
+    msg "$FgGreen" "Wine Prefix: $winePfx ($wineArch)"
 }
 
 function installWine {
@@ -515,7 +532,15 @@ Launching installer in wine:
 
 function linkWine {
     wineDriveC
-    
+
+    if [[ -z "$WINETARGET" ]]; then
+        msg "$BgRed" "
+You need to define the WINETARGET environment variable
+  This represents the subfolder in the wine installation with the program.
+  Your C: drive is located at:"
+        msg "$FgMagenta" "  $cDrive"
+        exit
+    fi
     wineTarg="$cDrive/$WINETARGET"
     gp="$GAMEDIR/$PROGDIR"
 

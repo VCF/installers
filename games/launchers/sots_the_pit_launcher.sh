@@ -18,16 +18,13 @@ WINEARCH="win$wineBits"
 
 ## Installation post-processing:
 WINETARGET="GOG Games/Sword of The Stars - The Pit"
-INSTSAVEDIR="$PROGDIR/save"
+INSTSAVEDIR="drive_c/users/$USER/Application Data/Sword of the Stars - The Pit"
 INSTICON="$PROGDIR.png"
 
 ## Notes:
 PRERUN="
 WineHQ Platinum
   https://appdb.winehq.org/objectManager.php?sClass=version&iId=32195
-
-!!! NOT YET WORKING !!!
-
 "
 
 

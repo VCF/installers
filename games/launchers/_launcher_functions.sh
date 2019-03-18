@@ -38,13 +38,14 @@ INSTROOT="/abyss/Installers"
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
 ##                   For Wine locations, can begin with 'drive_c/'
 ##                   'NONE' indicates no dir exists, don't nag about it
+##   * DORSYNC     : If set then backup via rsync rather than dated tar.gz
+##   * NOAUTOBACK  : Do not automatically backup the save files
 ##   * INSTICON    : custom icon file name (basename) for launcher
 ##   * INSTGIT     : A URL to a git repository to clone
 ##   * INSTFUNCTON : custom function that runs AFTER installation
 ##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
 ##   * INSTTRICKS  : winetricks needed by a Windows program
 ##   * NOTINTERM   : Do not run program in terminal
-##   * NOAUTOBACK  : Do not automatically backup the save files
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted

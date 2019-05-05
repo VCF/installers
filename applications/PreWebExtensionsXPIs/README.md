@@ -90,6 +90,20 @@ browsing history and a unique identifier back to their servers:
 Styl__us__ is working fine in Firefox, Waterfox and Tor, so I'm
 standardizing on it across platforms.
 
+#### Ya gotta' be kidding me II
+
+May 2019, Mozilla fails to update SSL signing certificate used to
+validate / approve addons. Expiration date comes and goes, all addons
+are immediately marked as deprecated and deactivated. Userland is not
+happy.
+
+* [Mozilla blog post][2019certFFblog]
+* [Firefox bug][2019certFFbug]
+  * [Firefox frantic fix][2019certFFkludge]
+* As a bonus, this also impacts Tor, disabling all addons, [including
+  NoScript][2019certFFtor], which is fairly fundamental for proper
+  anonymization. Userland is not happy.
+
 [FF57]: https://blog.mozilla.org/addons/2017/09/28/webextensions-in-firefox-57/
 [AMO]: https://addons.mozilla.org/en-US/firefox/
 [Palemoon]: https://www.palemoon.org/
@@ -115,3 +129,7 @@ standardizing on it across platforms.
 [StylishBC]: https://www.bleepingcomputer.com/news/software/2-million-users-impacted-by-new-data-collection-policy-in-stylish-browser-add-on/
 [StylishElReg]: https://www.theregister.co.uk/2018/07/05/browsers_pull_stylish_but_invasive_browser_extension/
 [StylishRH]: https://robertheaton.com/2018/07/02/stylish-browser-extension-steals-your-internet-history/
+[2019certFFbug]: https://bugzilla.mozilla.org/show_bug.cgi?id=1548973
+[2019certFFkludge]: https://bugzilla.mozilla.org/show_bug.cgi?id=1549061
+[2019certFFblog]: https://blog.mozilla.org/addons/2019/05/04/update-regarding-add-ons-in-firefox/
+[2019certFFtor]: https://blog.torproject.org/noscript-temporarily-disabled-tor-browser

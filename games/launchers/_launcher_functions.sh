@@ -46,6 +46,7 @@ INSTROOT="/abyss/Installers"
 ##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
 ##   * INSTTRICKS  : winetricks needed by a Windows program
 ##   * NOTINTERM   : Do not run program in terminal
+##   * UNPACKDIR   : If decompressing needs a subfolder created first
 
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
@@ -332,8 +333,19 @@ Launcher not found
     fi
     findInstaller
     [[ -z "$installer" ]] && return
-        
+
+    ## Switch to the games directory
     cd "$GAMEDIR"
+    if [[ -n "$UNPACKDIR" ]]; then
+        ## Generally provided when an archive does not define a
+        ## top-level containing folder
+        if [[ ! -d "$UNPACKDIR" ]]; then
+            msg "$FgMagenta" "Creating subdirectory for unpacking: $UNPACKDIR"
+            mkdir "$UNPACKDIR"
+            cd "$UNPACKDIR"
+        fi
+    fi
+    
     determineSuffix
 
     if [[ ! -z "$INSTCOPY" ]]; then
@@ -367,7 +379,7 @@ Launcher not found
         ## xz archive
         installXZ
     elif [[ $sfx == "zip" ]]; then
-        ## gzip archive
+        ## zip archive
         installZip
     else
         ## No idea!

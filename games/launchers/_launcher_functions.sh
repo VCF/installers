@@ -241,11 +241,19 @@ function runExecutable {
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        "./$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
+        if [[ -n "$LAUNCHARGS" ]]; then
+            "./$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
+        else
+            "./$LAUNCH" &>> "$LOG"
+        fi
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        "./$LAUNCH" "$LAUNCHARGS"
+        if [[ -n "$LAUNCHARGS" ]]; then
+            "./$LAUNCH" "$LAUNCHARGS"
+        else
+            "./$LAUNCH"
+        fi
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }

@@ -381,6 +381,9 @@ Launcher not found
     elif [[ $sfx == "zip" ]]; then
         ## zip archive
         installZip
+    elif [[ $sfx == "appimage" ]]; then
+        ## zip archive
+        installAppImage
     else
         ## No idea!
         failedUnknown
@@ -694,6 +697,30 @@ Preparing to extract:
     eval "$cmd"
 }
 
+function installAppImage {
+    TRIEDINSTALL="AppImage: $installer"
+    msg "$FgMagenta" "
+Preparing to copy:
+  $installer
+"
+    ## AppImages should simply be executables themselves
+    ## We need to make the folder to hold it, then just copy the "installer"
+    [[ -d "$PROGDIR" ]] || mkdir "$PROGDIR" # Make directory if not present
+    cd "$PROGDIR"
+
+    ## Get the basename of the program, then copy to the directory
+    bn=$(basename "$installer")
+    cp "$installer" "$bn"
+
+    chmod u+x "$bn" # Make sure it's executable
+
+    if [[ "$bn" != "$LAUNCH" ]]; then
+        ## The installer name does match the exectuable - this is
+        ## often because the installer has a version number in it
+        ln -fs "$bn" "$LAUNCH"
+    fi
+}
+
 function install_zip_custom {
     ## Unzip a file to a specified location
     ##   $1 = zip source file or URL
@@ -758,7 +785,7 @@ function failedUnknown {
     msg "$FgRed" "
 Found installer:
   $installer
-  ... but did not know what to do with it.
+  ... but did not know what to do with a '$sfx' File.
 "
     TRIEDINSTALL="UNKNOWN"
 }

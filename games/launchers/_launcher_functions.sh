@@ -44,6 +44,7 @@ INSTROOT="/abyss/Installers"
 ##   * INSTGIT     : A URL to a git repository to clone
 ##   * INSTFUNCTON : custom function that runs AFTER installation
 ##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
+##   * WINEARGS    : Switches passed to Wine
 ##   * INSTTRICKS  : winetricks needed by a Windows program
 ##   * NOTINTERM   : Do not run program in terminal
 ##   * UNPACKDIR   : If decompressing needs a subfolder created first
@@ -265,6 +266,11 @@ function runWine {
     in $(pwd)"
     [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
     set_title "Wine $PROGDIR";
+    WL="$LAUNCH"
+    if [[ -n "$WINEARGS" ]]; then
+        msg "$FgGreen" "    Wine Args: $WINEARGS"
+        WL="$WL $WINEARGS"
+    fi
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
@@ -276,18 +282,18 @@ function runWine {
         ## ifelse block
         if [[ -n "$LAUNCHARGS" ]]; then
             WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
-                    wine "$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
+                    wine "$WL" "$LAUNCHARGS" &>> "$LOG"
         else
-            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH" &>> "$LOG"
+            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$WL" &>> "$LOG"
         fi
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
         if [[ -n "$LAUNCHARGS" ]]; then
             WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
-                    wine "$LAUNCH" "$LAUNCHARGS"
+                    wine "$WL" "$LAUNCHARGS"
         else
-            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$LAUNCH"
+            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$WL"
         fi
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"

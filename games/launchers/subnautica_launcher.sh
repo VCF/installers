@@ -25,6 +25,7 @@ INSTTRICKS="corefonts vcrun2013"
 ## Installation post-processing:
 ## Capitalization may vary:
 WINETARGET="Program Files (x86)/Steam"
+WINEARGS="/nogui" # Get extra screen realestate
 INSTSAVEDIR="drive_c/Program Files (x86)/Steam/steamapps/common/Subnautica/SNAppData/SavedGames"
 
 INSTICON="$PROGDIR.png"

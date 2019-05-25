@@ -35,6 +35,7 @@ INSTROOT="/abyss/Installers"
 ##   * APTPACKAGES : Will install the listed pacakges as needed, via apt
 ##   * INSTAPT     : will show the contents as suggested libraries
 ##   * INSTHELP    : will suggest contents as installation help source
+##   * INSTCOPY    : Not really an installation, just copy the program
 ##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
 ##                   For Wine locations, can begin with 'drive_c/'
 ##                   'NONE' indicates no dir exists, don't nag about it
@@ -427,16 +428,17 @@ function findInstaller {
     TryDir[2]="$HOME/ToFile/GOG Updates/$PROGDIR"
     TryDir[3]="$HOME/ToFile/Humble Updates/$PROGDIR"
     TryDir[4]="$HOME/ToFile/OpenSource Updates/$PROGDIR"
+    TryDir[5]="$HOME/installers/scripts/$PROGDIR"
     if [[ ! -z "$INSTDIR" ]]; then
         ## Also use INSTDIR as default location, if it has been set by
         ## the launcher
         isAbsPath=$(echo "$INSTDIR" | grep '^/')
         if [[ -z "$isAbsPath" ]]; then
             ## Appears to be a relative path
-            TryDir[5]="$INSTROOT"/"$INSTDIR"
+            TryDir[6]="$INSTROOT"/"$INSTDIR"
         else
             ## Appears to be an absolute path
-            TryDir[5]="$INSTDIR"
+            TryDir[6]="$INSTDIR"
         fi
     fi
 
@@ -478,10 +480,10 @@ function installCopy {
     mkdir -p "$gp"
     msg ""
     msg "$FgMagenta" "
-Copying executable $EXECUTABLE to:
+Copying executable $installer to:
   $gp
 "
-    cp "$INSTDIR/$LAUNCH" "$EXECUTABLE"
+    cp "$installer" "$EXECUTABLE"
 }
 
 function installShell {

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Location of the executable:
-PROGDIR="Minecraft Server"
+PROGDIR="Bedrock Server"
 LAUNCH="bedrock_server"
 ## Location of the installer:
 INSTDIR="/abyss/Common/Minecraft/Executable"
@@ -10,7 +10,7 @@ INSTHELP="To update, visit:
   https://www.minecraft.net/en-us/download/server/bedrock/
 "
 ## Installation post-processing:
-# INSTSAVEDIR="$HOME/.minecraft/saves"
+INSTSAVEDIR="$HOME/Programs/$PROGDIR/worlds"
 INSTICON="$PROGDIR.png"
 UNPACKDIR="$PROGDIR"
 NOREDIRECT="TRUE"

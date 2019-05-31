@@ -444,7 +444,13 @@ function finishInstall {
 
     ## Set the executable as, well, executable. Usually not needed,
     ## but sometimes archives don't have correct permissions
-    [[ "$extSfx" != 'jar' && -s "$EXECUTABLE" ]] && chmod u+x "$EXECUTABLE"
+    extSfx="${LAUNCH##*.}"
+    if [[ "$extSfx" != 'jar' && -s "$EXECUTABLE" ]]; then
+        msg "$FgCyan" "Setting launcher to be executable ...
+  $EXECUTABLE
+"
+        chmod u+x "$EXECUTABLE"
+    fi
     
     desktopIcon
     

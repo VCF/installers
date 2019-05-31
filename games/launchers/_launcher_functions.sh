@@ -212,8 +212,6 @@ function runGame {
         ## Not an executable. What is the extension?
         ##     https://stackoverflow.com/a/965069
         if [[ "$extSfx" == 'jar' ]]; then
-            java -version >> "$LOG"
-            echo "#################################################" >> "$LOG"
             runJava
         else
             msg "$FgRed" "  Command exists but is not executable; run:
@@ -305,15 +303,53 @@ function runJava {
     [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
 
     set_title "Run Java $PROGDIR";
+
+    JCMD="$JAVACMD"
+    if [[ -n "$JCMD" ]]; then
+        ## A specific version of Java has been requested
+        chk=$(which "$JCMD")
+        if [[ -n "$chk" ]]; then
+            msg "$FgGreen" "  Using custom JRE $JCMD"
+
+        else
+            msg "$FgRed" "
+A request was made to run this program with a specific Java version:
+  $JCMD
+
+  ... that is not present. You may need to install it; Search with
+  aptitude, for example if 'java-8-openjdk' is suggested, the version
+  is 8 and you want to try a search for:
+
+  aptitude search openjdk-8-jre
+
+  If you don't see it installed (there is no 'i' in front of the
+  package), you would then run:
+
+  sudo apt-get install openjdk-8-jre
+
+  If you know it is installed, then you can make a symlink from the
+  expected location to the installed one.
+
+"
+            exit
+        fi
+    else
+        ## Use the default Java
+        JCMD="java"
+    fi
+    
+    "$JCMD" -version >> "$LOG"
+    echo "#################################################" >> "$LOG"
+    
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        java -Xmx1024M -Xms1024M -jar "$LAUNCH" \
+        "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH" \
              "$LAUNCHARGS" &>> "$LOG"
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        java -Xmx1024M -Xms1024M -jar "$LAUNCH" "$LAUNCHARGS"
+        "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH" "$LAUNCHARGS"
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }

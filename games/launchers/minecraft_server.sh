@@ -4,7 +4,7 @@
 PROGDIR="Minecraft Server"
 LAUNCH="bedrock_server"
 ## Location of the installer:
-INSTDIR="/abyss/Common/$PROGDIR/Executable"
+INSTDIR="/abyss/Common/Minecraft/Executable"
 INSTNAME='bedrock-server-*.zip'
 INSTHELP="To update, visit:
   https://www.minecraft.net/en-us/download/server/bedrock/

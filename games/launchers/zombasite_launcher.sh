@@ -8,7 +8,7 @@ INSTDIR="GOG/$PROGDIR"
 INSTNAME='zombasite_*.sh'
 ## Installation post-processing:
 INSTICON="$PROGDIR.png"
-# INSTSAVEDIR="$HOME/Programs/$PROGDIR/game/files/saves"
+INSTSAVEDIR="$HOME/.local/Zombasite/User"
 
 my_dir="$(dirname "$0")"
 . "$my_dir/_launcher_functions.sh"

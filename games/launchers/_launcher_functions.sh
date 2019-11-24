@@ -48,6 +48,7 @@ INSTROOT="/abyss/Installers"
 ##   * WINEARGS    : Switches passed to Wine
 ##   * INSTTRICKS  : winetricks needed by a Windows program
 ##   * NOTINTERM   : Do not run program in terminal
+##   * RUNFUNCTION : bash function to run before launching program
 ##   * UNPACKDIR   : If decompressing needs a subfolder created first
 
 ## Copyright (C) 2017 Charles A. Tilford

@@ -75,6 +75,8 @@ LICENSE_GPL3="
 myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . "$myLaunchDir/../../generalUtilities/_backupFunctions.sh"
 
+fileCol=$(ansiStart "$FgMagenta")
+
 cDrive=""
 
 # Testing the suffix of a file:
@@ -95,6 +97,7 @@ function launcherHelp {
             msg "$FgCyan" "    ... from a git repository"
          fi
     fi
+    unBit="The save directory is unknown, make sure your save files are ok!"
     if [[ -n "$INSTSAVEDIR" && "$INSTSAVEDIR" != 'NONE' ]]; then
         msg "$FgCyan" "  It will normalize save file location for you"
         helpTxt="$helpTxt
@@ -102,13 +105,21 @@ function launcherHelp {
     backup - Will backup save files, if needed and in a known location"
         [[ -n "$NOAUTOBACK" ]] &&         helpTxt="$helpTxt
              Backups must be run manually - $NOAUTOBACK"
-
+        saveLocation
+        SrcFolder="$SAVEDIR/$PROGDIR"
+        BckFolder=$(backupSubfolder "$SrcFolder" "GameFiles")
+        unBit="Your save files a preserved, if you have run at least once:
+               $fileCol'$SrcFolder'
+               $fileCol'$BckFolder'$(ansiEnd)
+"
     fi
     funcSet=$(type -t INSTFUNCTION)
     if [[ "$funcSet" == "function" ]]; then
         helpTxt="$helpTxt
   custfunc - Re-run post-installation custom function (use only when prompted)"
     fi
+        helpTxt="$helpTxt
+ uninstall - Remove the program files. $unBit"
     msg "$FgBlue" "\nYou can pass it the following arguments:"
     msg "$FgCyan" "$helpTxt\n"
 }
@@ -139,6 +150,9 @@ function find_and_run_executable {
     elif [[ $(hasParam "$1" "save") ]]; then
         ## Move the save files to a standard location
         saveLocation; return
+    elif [[ $(hasParam "$1" "uninstall") ]]; then
+        ## Uninstall the program
+        uninstallGame; return
     elif [[ ! -z "$1" ]]; then
         ## Parameters were passed, but we don't know what they are
         err "Unrecognized parameters:"
@@ -841,6 +855,87 @@ Found installer:
     TRIEDINSTALL="UNKNOWN"
 }
 
+function uninstallGame {
+    hBar="=========================================================="
+    msg "$FgRed" "
+$hBar
+UNINSTALLING PROGRAM: $PROGDIR
+$hBar
+"
+    if [[ -z "$GAMEDIR" ]]; then
+        msg "$FgYellow" "Aborting - GAMEDIR must be set"
+        return
+    fi
+    if [[ -z "$PROGDIR" ]]; then
+        msg "$FgYellow" "Aborting - PROGDIR must be set"
+        return
+    fi
+    targDir="$GAMEDIR/$PROGDIR"
+    saveLocation
+    if [[ -z "$UNKNOWNSAVE" ]]; then
+        sd="$SAVEDIR/$PROGDIR"
+        msg "$FgGreen" "Your save files will be kept at:
+  ${fileCol}'$sd'$(ansiStart $FgGreen)
+... with the following contents:$(ansiStart $FgCyan)
+$hBar
+$(ls -lh "$sd")
+$hBar"
+        echo ""
+        SrcFolder="$SAVEDIR/$PROGDIR"
+        BckFolder=$(backupSubfolder "$SrcFolder" "GameFiles")
+        if [[ -d "$BckFolder" ]]; then
+        msg "$FgGreen" "You also have a backup folder at:
+  ${fileCol}'$BckFolder'$(ansiStart $FgGreen)
+... with the following contents:$(ansiStart $FgCyan)
+$hBar
+$(ls -lh "$BckFolder")
+$hBar"
+        else
+            msg "$FgYellow" "   - No backup folder was identified -"
+        fi
+    else
+        msg "$FgYellow" "Save files may not be preserved!\n  $UNKNOWNSAVE"
+    fi
+    
+    NEEDDEL=""
+    dt="$(desktopPath)"
+    [[ -d "$targDir" ]] && NEEDDEL="Y"
+    [[ -e "$dt" ]] && NEEDDEL="Y"
+    if [[ -z "$NEEDDEL" ]]; then
+        msg "$FgGreen" "
+    It appears all program files have already been removed
+"
+        return
+    fi
+
+    msg "$FgRed" "
+$hBar
+The following directory will be COMPLETELY DELETED:
+  ${fileCol}$targDir$(ansiStart $FgRed)
+$hBar
+"
+    
+    read -p "$(ansiStart $BgYellow) $(ansiStart $FgRed)Do you wish to delete the above directory?$(ansiStart $FgBlue) $(ansiStart $BgWhite)[yes/no]$(ansiEnd) " GODELETE
+    if [[ "$GODELETE" != "yes" ]]; then
+        msg "$FgGreen" "  UNINSTALL ABORTED. No changes performed"
+        return
+    fi
+
+    if [[ -d "$targDir" ]]; then
+        msg "$FgRed" "Removing program directory:"
+        rm -rfv --one-file-system "$targDir"
+    else
+        msg "$FgCyan" "  Progam directory appears to already be removed"
+    fi
+
+    if [[ -e "$dt" ]]; then
+        msg "$FgRed" "Removing desktop icon:"
+        rm -rv "$dt"
+    else
+        msg "$FgCyan" "  Desktop icon appears to already be removed"
+    fi
+}
+
 function showComments {
     ## Indicate if additional packages are indicated as needed:
     [[ -z "$INSTAPT" ]] || msg "$BgYellow;$FgBlue" "
@@ -918,18 +1013,23 @@ function countdown {
 }
 
 function saveLocation {
+    UNKNOWNSAVE="Yes"
     if [[ -z "$INSTSAVEDIR" ]]; then
         msg "$FgBlue" "
 You may wish to normalize save file location using:
   ~/confFiles/games/makeGameLinks.sh
 "
+        UNKNOWNSAVE="No path specified"
         return
     fi
 
     ## Just a flag for no save location being set - prevents the above
     ## message from being emitted
-    [[ "$INSTSAVEDIR" == 'NONE' ]] && return
-
+    if [[ "$INSTSAVEDIR" == 'NONE' ]]; then
+        UNKNOWNSAVE="Flag set indicating no save files are needed"
+        return
+    fi
+    
     if [[ $INSTSAVEDIR =~ ^drive_c ]]; then
         ## locations starting with 'drive_c' need to be normalized to
         ## the requested Wine prefix
@@ -950,6 +1050,7 @@ You may wish to normalize save file location using:
   $isd
   ... but it is a relative path and I don't know how to make it absolute
 "
+            UNKNOWNSAVE="Unable to resolve requested directory"
             return
         else
             ## The path is relative to a wine directory
@@ -964,13 +1065,16 @@ You may wish to normalize save file location using:
         tTarg=$(readlink -f "$isd")
         sTarg=$(readlink -f "$TargDir")
         if [[ "$tTarg" == "$sTarg" ]]; then
-            msg "$FgCyan" "Save files already linked from\n  $isd"
-        else
+            msg "$FgCyan" "Save files already linked from
+  ${fileCol}'$isd'"
+            UNKNOWNSAVE=""
+       else
             err "Save files are linked, but not to expected location:
     File location: $isd
            Target: $tTarg
   Expected Target: $sTarg
 "
+            UNKNOWNSAVE="Linked directory is in unexpected location"
         fi
         return
     elif [[ -d "$isd" ]]; then
@@ -1011,6 +1115,7 @@ Once the parent exists, run:
     ## Finally, put a symlink in the "expected" location pointing to
     ## the normalized one.
     ln -s "$TargDir" "$isd"
+    UNKNOWNSAVE=""
     msg "$FgBlue" "Save files linked to standard location in 
   $SAVEDIR
   Symlink in: $isd
@@ -1032,11 +1137,15 @@ function fallBackPath {
     fi
 }
 
-function desktopIcon {
-    ## Make a desktop launcher
+function desktopPath {
     dtDir="$HOME/Desktop" # For .desktop files
     mkdir -p "$dtDir"
-    dt="$dtDir/$PROGDIR".desktop
+    echo "$dtDir/$PROGDIR".desktop
+}
+
+function desktopIcon {
+    ## Make a desktop launcher
+    dt="$(desktopPath)"
     if [[ -s "$dt" ]]; then
         ## Do nothing else if it is already there ... unless the
         ## launcher was made by some other program
@@ -1045,7 +1154,7 @@ function desktopIcon {
         ## If the launcher refers to the launch script, move on
         [[ -n "$isOk" ]] && return
         ## Otherwise, mv this elsewhere
-        dtBkDir="$dtDir/Original Launchers"
+        dtBkDir="$HOME/Desktop/Original Launchers"
         mkdir -p "$dtBkDir"
         mv "$dt" "$dtBkDir"
     fi

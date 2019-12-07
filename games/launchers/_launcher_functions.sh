@@ -1016,8 +1016,9 @@ function saveLocation {
     UNKNOWNSAVE="Yes"
     if [[ -z "$INSTSAVEDIR" ]]; then
         msg "$FgBlue" "
-You may wish to normalize save file location using:
-  ~/confFiles/games/makeGameLinks.sh
+If you know the folder that contains save files, please define it with:
+   $(ansiStart $FgCyan)INSTSAVEDIR='...'$(ansiStart $FgBlue)
+   ... in the launcher script
 "
         UNKNOWNSAVE="No path specified"
         return

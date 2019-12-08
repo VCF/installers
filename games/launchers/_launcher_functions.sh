@@ -372,7 +372,10 @@ A request was made to run this program with a specific Java version:
 function installGame {
     TRIEDINSTALL="CHECKED"
 
+    [[ -n "$PREINST" ]] && msg "$BgYellow" "$PREINST"
+
     checkOtherPackages
+
 
     if [[ -n "$INSTGIT" ]]; then
         installGit
@@ -503,7 +506,7 @@ function findInstaller {
         ## List by modified date, if there are more than one match
         ## take the most recent one. Allows use of pattern eg:
         ##    myGame_*.sh -> myGame_1.3.sh, myGame_1.4.2.sh etc
-        installer=$(ls -1t "$dir"/$INSTNAME 2>/dev/null | head -n1)
+        installer="$(ls -1t "$dir"/$INSTNAME 2>/dev/null | head -n1)"
         [[ -z "$installer" ]] || break # Take first example we find
     done
     
@@ -519,7 +522,21 @@ Could not find installer '$INSTNAME' in:
 function determineSuffix {
     ##  Lower case in bash: https://stackoverflow.com/a/2264537
     ## Parameter Expansion: https://stackoverflow.com/a/965069
-    sfx=$(echo "${installer##*.}" | tr '[:upper:]' '[:lower:]')
+
+    hasDot="$(echo "$installer" | grep '\.')"
+    if [[ -z "$hasDot" ]]; then
+        ## This file does not appear to have a suffix
+        isExe="$(file "$installer" | grep -i 'executable')"
+        if [[ -n "$isExe" ]]; then
+            ## Looks to be executable - let's set suffix as "sh"
+            sfx="sh"
+        else
+            ## Not sure what this is ...
+            sfx="NoSuffix"
+        fi
+    else
+        sfx=$(echo "${installer##*.}" | tr '[:upper:]' '[:lower:]')
+    fi
     ## Also see if this looks like a TAR archive
     unTar=$(isTarArchive "$installer")
 }
@@ -551,6 +568,7 @@ Preparing to install:
            Subfolder should be: $PROGDIR
   Do not let the installer create a launcher, one will be made for you.
 "
+    ## msg "$BgWhite" "DEBUG: $(pwd)"
     "$installer"
 }
 
@@ -575,7 +593,7 @@ Establishing new Wine Prefix at:
 }
 
 function installWine {
-    Pwd=$(pwd)
+    Pwd="$(pwd)"
     wineDriveC
 
     if [[ -n "$INSTTRICKS" ]]; then
@@ -602,8 +620,8 @@ The wine helper application `winetricks` does not appear to be installed
     ## directory in C:/
     cd "$cDrive"
     tmpLnk="TempLinkForInstallation"
-    instDir=$(dirname "$installer")
-    instExe=$(basename "$installer")
+    instDir="$(dirname "$installer")"
+    instExe="$(basename "$installer")"
     ln -s "$instDir" "$tmpLnk"
     # Now run the installer
     msg "$FgMagenta" "
@@ -774,7 +792,7 @@ Preparing to copy:
     cd "$PROGDIR"
 
     ## Get the basename of the program, then copy to the directory
-    bn=$(basename "$installer")
+    bn="$(basename "$installer")"
     cp "$installer" "$bn"
 
     chmod u+x "$bn" # Make sure it's executable
@@ -1150,7 +1168,7 @@ function desktopIcon {
     if [[ -s "$dt" ]]; then
         ## Do nothing else if it is already there ... unless the
         ## launcher was made by some other program
-        myself=$(basename "$0")
+        myself="$(basename "$0")"
         isOk=$(grep "$myself" "$dt")
         ## If the launcher refers to the launch script, move on
         [[ -n "$isOk" ]] && return
@@ -1179,8 +1197,8 @@ function desktopIcon {
     fi
 
     ## I keep ending up with weird executables...
-    exeDir=$(readlink -f "$myLaunchDir") # Launcher directory
-    exeExe=$(basename "$0")              # Launcher script name
+    exeDir="$(readlink -f "$myLaunchDir")" # Launcher directory
+    exeExe="$(basename "$0")"              # Launcher script name
     Exec="$exeDir/$exeExe" # Absolute launcher path, de-linkified
 
     if [[ -z "$NOTINTERM" ]]; then

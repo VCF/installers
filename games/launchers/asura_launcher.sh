@@ -7,7 +7,7 @@ LAUNCH="start.sh"
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='asura_en_*.sh'
 ## Installation post-processing:
-# INSTSAVEDIR="$HOME/.config/unity3d/Convoy Games/Convoy"
+INSTSAVEDIR="$HOME/.config/unity3d/OgreHeadStudio/Asura"
 INSTICON="$PROGDIR.png"
 
 my_dir="$(dirname "$0")"

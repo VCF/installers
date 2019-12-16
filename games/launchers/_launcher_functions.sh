@@ -1102,17 +1102,17 @@ If you know the folder that contains save files, please define it with:
             ## So does the normalized location
             BkupDir="$isd"-BKUP
             mv "$isd" "$BkupDir"
-            msg "$FgYellow" "[!] Initial (empty) save directory moved to: $BkupDir"
-            msg "$FgBlue" "Using normalized save files at: $TargDir"
+            msg "$FgYellow" "[!] Initial (empty) save directory moved to: \"$BkupDir\""
+            msg "$FgBlue" "Using normalized save files at: \"$TargDir\""
         else
             ## We have not yet made the normalized location, move the
             ## initial folder there
             mv "$isd" "$TargDir"
-            msg "$FgBlue" "Save directory moved to: $TargDir"
+            msg "$FgBlue" "Save directory moved to: \"$TargDir\""
         fi
     elif [[ -d "$TargDir" ]]; then
         ## Just acknowledge that we found the prior game files
-        msg "$FgBlue" "Prior save files found at: $TargDir"
+        msg "$FgBlue" "Prior save files found at: \"$TargDir\""
         par=$(dirname "$isd")
         if [[ ! -d "$par" ]]; then
            msg "$FgRed$BgYellow" "
@@ -1137,7 +1137,7 @@ Once the parent exists, run:
     UNKNOWNSAVE=""
     msg "$FgBlue" "Save files linked to standard location in 
   $SAVEDIR
-  Symlink in: $isd
+  Symlink in: \"$isd\"
 "
 }
 

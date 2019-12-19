@@ -9,11 +9,13 @@ repositories.
 * [.updateSubmodules.sh](.updateSubmodules.sh) - simple script that just runs
   `git submodule update --init --recursive --remote`
 
-### Moved to [generalUtilities][gu] submodule
+### Tech notes for [generalUtilities][gu] subtree
 
-
-* [_util_functions.sh][uf] - Basic functions, mostly
+* Used for [_util_functions.sh][uf] - Basic functions, mostly
   colorized terminal messaging.
+* [How to remove a submodule][smrm] and [how to add a subtree][stadd]
 
 [gu]: https://github.com/VCF/generalUtilities
 [uf]: https://github.com/VCF/generalUtilities/blob/master/_util_functions.sh
+[smrm]: https://stackoverflow.com/questions/1260748/how-do-i-remove-a-submodule/36593218#36593218
+[stadd]: https://www.atlassian.com/git/tutorials/git-subtree

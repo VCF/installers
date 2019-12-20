@@ -40,7 +40,7 @@
 ##   * INSTGIT     : A URL to a git repository to clone
 ##   * INSTFUNCTON : custom function that runs AFTER installation
 ##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
-##   * WINEARGS    : Switches passed to Wine
+##   * WINEARGS    : Switches passed to Wine when running application
 ##   * INSTTRICKS  : winetricks needed by a Windows program
 ##   * NOTINTERM   : Do not run program in terminal
 ##   * RUNFUNCTION : bash function to run before launching program

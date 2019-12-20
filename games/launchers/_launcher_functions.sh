@@ -1,10 +1,5 @@
 #!/bin/bash
 
-GAMEDIR="$HOME/Programs"
-SAVEDIR="$HOME/Documents/GameFiles"
-LOGFILE="LaunchLog.txt"
-INSTROOT="/abyss/Installers"
-
 ## Library of functions used to install and launch games. Installed
 ## games are expected to be in $GAMEDIR (above). Launching will look
 ## for two environment variables:
@@ -75,9 +70,46 @@ LICENSE_GPL3="
 myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . "$myLaunchDir/../../generalUtilities/_backupFunctions.sh"
 
+
 fileCol=$(ansiStart "$FgMagenta")
 
 cDrive=""
+
+function loadPrefs {
+    pFile="$HOME/.vcfInstallerPrefs.sh"
+    if [[ ! -f "$pFile" ]]; then
+        src="$myLaunchDir/../../blankTemplatePrefFile.sh"
+        cp "$src" "$pFile"
+        if [[ ! -f "$pFile" ]]; then
+            msg "$FgRed" "
+Failed to create new preference file. Tried and failed to copy template at:
+  $src
+"
+            return
+        fi
+        msg "$FgMagenta" "
+New configuration file created at:
+
+  $pFile
+
+You should probably edit that file to assure that the following
+settings are to your satisfaction:
+
+  INSTDIRS  = Where your installer files can be found (1 or more folders)
+  ICONDIRS  = Where you store icons used for the launchers (1 or more folders)
+  GAMEDIR   = Single folder where the programs (executables) will be installed
+  SAVEDIR   = Single folder where save/configuration files will be moved to
+  BACKUPDIR = Where your tar.gz backups will be written
+
+"
+    fi
+    . "$pFile"
+    
+#INSTROOT="/abyss/Installers"
+
+}
+
+loadPrefs
 
 # Testing the suffix of a file:
 # https://stackoverflow.com/a/965072
@@ -481,41 +513,16 @@ Installer finished, attempting launch...
 }
 
 function findInstaller {
-    ## Check first to see if the installer is in ~/Downloads or
-    ## ~/ToFile; If so, use one of those.
-    TryDir[0]="$HOME/Downloads"
-    TryDir[1]="$HOME/ToFile"
-    TryDir[2]="$HOME/ToFile/GOG Updates/$PROGDIR"
-    TryDir[3]="$HOME/ToFile/Humble Updates/$PROGDIR"
-    TryDir[4]="$HOME/ToFile/OpenSource Updates/$PROGDIR"
-    TryDir[5]="$HOME/installers/scripts/$PROGDIR"
-    if [[ ! -z "$INSTDIR" ]]; then
-        ## Also use INSTDIR as default location, if it has been set by
-        ## the launcher
-        isAbsPath=$(echo "$INSTDIR" | grep '^/')
-        if [[ -z "$isAbsPath" ]]; then
-            ## Appears to be a relative path
-            TryDir[6]="$INSTROOT"/"$INSTDIR"
-        else
-            ## Appears to be an absolute path
-            TryDir[6]="$INSTDIR"
-        fi
-    fi
-
-    for dir in "${TryDir[@]}"; do
-        ## List by modified date, if there are more than one match
-        ## take the most recent one. Allows use of pattern eg:
-        ##    myGame_*.sh -> myGame_1.3.sh, myGame_1.4.2.sh etc
-        installer="$(ls -1t "$dir"/$INSTNAME 2>/dev/null | head -n1)"
-        [[ -z "$installer" ]] || break # Take first example we find
-    done
+    ## A list of possible locations should have been provided in the
+    ## INSTDIRS variable in the conf file
+    installer="$(firstFileLocation "$INSTDIRS" $INSTNAME)"
     
     if [[ -z "$installer" ]]; then
         ## Installer not found
         msg "$FgRed" "
-Could not find installer '$INSTNAME' in:
-  ${TryDir[*]}"
-        echo ""
+Could not find installer '$INSTNAME'. Checked:
+$INSTDIRS
+"
     fi
 }
 
@@ -1177,23 +1184,36 @@ function desktopIcon {
         mkdir -p "$dtBkDir"
         mv "$dt" "$dtBkDir"
     fi
-    iDir="$SAVEDIR/.icons"    # Local icon store
-    iSrc="/abyss/Media/iconImages"     # Primary storage
-    iBkup="/abyss/Common/ToFile/icons" # But check here first
-    defIcon="GenericIcon.png"          # Default icon
-    icon=${INSTICON:-"$defIcon"}
-    iPath="$iDir/$icon"
+    
+    iDir="$SAVEDIR/.icons"        # Local icon store
+    defIcon="GenericIcon.png"     # Default icon
+    icon=${INSTICON:-"$defIcon"}  # Use custom icon if provided
+    iPath="$iDir/$icon"           # Local path to icon
     mkdir -p "$iDir"
     if [[ ! -s "$iPath" ]]; then
-        ## Make a local copy of the icon
-        fallBackPath "$icon" "$iBkup" "$iSrc"
-        if [[ -z "$fbp" ]]; then
-            ## Failed to find the icon, use the default
-            icon="$defIcon"
-            iPath="$iDir/$icon"
-            fallBackPath "$icon" "$iBkup" "$iSrc"
+        ## We do not yet have the icon stored locally, make a copy
+        srcPath="$(firstFileLocation "$ICONDIRS" "$iPath")"
+        if [[ -z "$srcPath" ]]; then
+            ## Could not find the icon
+            ## Use the default icon included with repo
+            $srcPath="$myLaunchDir/../../GenericIcon.png"
+            iPath="$iDir/$defIcon"
+            if [[ "$icon" != "$defIcon" ]]; then
+                ## A custom icon was defined. Let user know they can provide it
+                msg "$FgYellow" "
+The installer can set the shortcut icon to this file:
+  $icon
+... provided it is saved in one of the following directories:
+$ICONDIRS
+
+You can download an icon of your choice, save it with the above name
+in one of the above directories, delete the desktop shortcut and
+re-run the installer.
+
+"
+            fi
         fi
-        [[ -z "$fbp" ]] || cp "$fbp" "$iPath" # Copy to local storage if found
+        cp "$srcPath" "$iPath" # Copy locally if found
     fi
 
     ## I keep ending up with weird executables...
@@ -1269,6 +1289,44 @@ function checkOtherPackages {
     checkAptPackages
 }
 
+
+function linesToArray {
+    ## $1 - a multiline string to be split
+    ## Split string on newlines: https://stackoverflow.com/a/19772067
+    IFS=$'\n' read -rd '' -a SPLITLINES <<< "$1"
+    ## Sets SPLITLINES to be an array
+}
+
+function firstFileLocation {
+    ## $1 - a multiline string of possible directory locations
+    ## $2 - a file path to add to each of the above directories
+    ## We are allowing $2 to contain '*' wild cards
+    
+    chk="$(ls -1t $2 2>/dev/null | head -n1)"
+    if [[ -n "$chk" ]]; then
+        ## The file path is either available relative to ./, or it's
+        ## an absolute path and was found as expected.
+        echo "$chk"
+        return
+    fi
+    linesToArray "$1"
+    for path in "${SPLITLINES[@]}"
+    do
+        ## Trim terminal spaces from the path:
+        path="$(sed 's/ *$//' <<< "$path")"
+        if [[ -n "$path" ]]; then
+            ## path is non-blank
+            chk="$(ls -1t "$path"/$2 2>/dev/null | head -n1)"
+            if [[ -f "$chk" ]]; then
+                ## File was found
+                echo "$chk"
+                return
+            fi
+        fi
+    done
+    echo "" # Nothing found
+}
+
 function checkAptPackages {
     chkDp=$(which dpkg)
     if [[ -z "$chkDp" ]]; then
@@ -1302,3 +1360,4 @@ $APTPACKAGES
     done
     
 }
+

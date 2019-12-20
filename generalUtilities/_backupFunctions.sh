@@ -3,15 +3,6 @@
 
 ## Functions to use for backup and synchronization
 
-
-
-BACKUPDIR="/abyss/Common/Backups"
-## Subdirectory by host:
-myHost=$(hostname)
-[[ -z "$myHost" ]] || BACKUPDIR="$BACKUPDIR/$myHost"
-## Make sure target directory exists
-[[ -d "$BACKUPDIR" ]] || mkdir -p -m 1777 "$BACKUPDIR"
-
 ## Copyright (C) 2017 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
 
@@ -35,6 +26,14 @@ LICENSE_GPL3="
 ## script folder: https://stackoverflow.com/a/246128
 my_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . "$my_dir/_util_functions.sh" # Source in utility functions
+
+if [[ -z "$BACKUPDIR" ]]; then
+    BACKUPDIR="$HOME/FileBackups"
+    msg "$FgMagenta" "
+BACKUPDIR was not defined, using: $BACKUPDIR
+  (you may want to set that variable to something else)
+"
+fi
 
 function lastModified {
     ## One argument, the file or folder to check. Will return the most

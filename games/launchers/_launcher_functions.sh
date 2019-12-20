@@ -894,7 +894,15 @@ $hBar
         msg "$FgYellow" "Aborting - PROGDIR must be set"
         return
     fi
+    targLnk=""
     targDir="$GAMEDIR/$PROGDIR"
+    if [[ -h "$targDir" ]]; then
+        ## The target is actually a link, probably to a Wine installation
+        ## Resolve the link to its target, and note that we will need to
+        ## remove the symlink as well
+        targLnk="$targDir"
+        targDir="$(readlink -f "$targDir")"
+    fi
     saveLocation
     if [[ -z "$UNKNOWNSAVE" ]]; then
         sd="$SAVEDIR/$PROGDIR"
@@ -948,6 +956,7 @@ $hBar
     if [[ -d "$targDir" ]]; then
         msg "$FgRed" "Removing program directory:"
         rm -rfv --one-file-system "$targDir"
+        [[ -n "$targLnk" ]] && rm "$targLnk" # Remove symlink, if present
     else
         msg "$FgCyan" "  Progam directory appears to already be removed"
     fi

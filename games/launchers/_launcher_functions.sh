@@ -1299,9 +1299,17 @@ function linesToArray {
 function firstFileLocation {
     ## $1 - a multiline string of possible directory locations
     ## $2 - a file path to add to each of the above directories
-    ## We are allowing $2 to contain '*' wild cards
-    
-    chk="$(ls -1t $2 2>/dev/null | head -n1)"
+
+    ## If the file path request has a wildcard (*) then we can't quote
+    ## it in the below calls. Otherwise, we should quote to properly
+    ## preserve spaces in the path:
+    hasAsterisk="$(echo "$2" | grep '\*')"
+
+    if [[ -z "$hasAsterisk" ]]; then
+        chk="$(ls -1t "$2" 2>/dev/null | head -n1)"
+    else
+        chk="$(ls -1t $2 2>/dev/null | head -n1)"
+    fi
     if [[ -n "$chk" ]]; then
         ## The file path is either available relative to ./, or it's
         ## an absolute path and was found as expected.
@@ -1315,7 +1323,11 @@ function firstFileLocation {
         path="$(sed 's/ *$//' <<< "$path")"
         if [[ -n "$path" ]]; then
             ## path is non-blank
-            chk="$(ls -1t "$path"/$2 2>/dev/null | head -n1)"
+            if [[ -z "$hasAsterisk" ]]; then
+               chk="$(ls -1t "$path"/"$2" 2>/dev/null | head -n1)"
+            else
+                chk="$(ls -1t "$path"/$2 2>/dev/null | head -n1)"
+            fi
             if [[ -f "$chk" ]]; then
                 ## File was found
                 echo "$chk"

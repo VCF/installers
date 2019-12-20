@@ -19,7 +19,7 @@ INSTTRICKS="directplay"
 
 ## Installation post-processing:
 WINETARGET="Program Files/GOG.com/Fallout 2"
-INSTSAVEDIR="drive_c/rogram Files/GOG.com/Fallout 2/data/SAVEGAME"
+INSTSAVEDIR="drive_c/Program Files/GOG.com/Fallout 2/data/SAVEGAME"
 INSTICON="$PROGDIR.png"
 
 ## Notes:

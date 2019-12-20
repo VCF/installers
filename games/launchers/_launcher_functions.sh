@@ -68,8 +68,7 @@ LICENSE_GPL3="
 
 ## script folder: https://stackoverflow.com/a/246128
 myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-. "$myLaunchDir/../../generalUtilities/_backupFunctions.sh"
-
+. "$myLaunchDir/../../generalUtilities/_util_functions.sh"
 
 fileCol=$(ansiStart "$FgMagenta")
 
@@ -105,11 +104,11 @@ settings are to your satisfaction:
     fi
     . "$pFile"
     
-#INSTROOT="/abyss/Installers"
-
 }
 
 loadPrefs
+
+. "$myLaunchDir/../../generalUtilities/_backupFunctions.sh"
 
 # Testing the suffix of a file:
 # https://stackoverflow.com/a/965072
@@ -1192,11 +1191,11 @@ function desktopIcon {
     mkdir -p "$iDir"
     if [[ ! -s "$iPath" ]]; then
         ## We do not yet have the icon stored locally, make a copy
-        srcPath="$(firstFileLocation "$ICONDIRS" "$iPath")"
+        srcPath="$(firstFileLocation "$ICONDIRS" "$icon")"
         if [[ -z "$srcPath" ]]; then
             ## Could not find the icon
             ## Use the default icon included with repo
-            $srcPath="$myLaunchDir/../../GenericIcon.png"
+            srcPath="$myLaunchDir/../../GenericIcon.png"
             iPath="$iDir/$defIcon"
             if [[ "$icon" != "$defIcon" ]]; then
                 ## A custom icon was defined. Let user know they can provide it

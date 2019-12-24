@@ -1,14 +1,15 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="Steam Marines"
 LAUNCH="run.sh"
 ## Location of the installer:
 INSTDIR="Humble Indie Bundle/$PROGDIR"
 INSTNAME='Steam_Marines_*.zip'
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
+
 ## Installation post-processing:
 INSTRENAME='Steam_Marines_*/'"$PROGDIR"
 ## Save directory is under a literal '~' - probably a shell error on their part

@@ -1,14 +1,15 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="Dungeon Souls"
 LAUNCH="start.sh"
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='dungeon_souls_en_*.sh'
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
+
 ## Installation post-processing:
 INSTSAVEDIR="$HOME/.config/DungeonSouls"
 INSTICON="$PROGDIR.png"

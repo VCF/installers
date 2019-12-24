@@ -1,8 +1,5 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="SanctuaryRPG"
 LAUNCH="SanctuaryRPG.exe"
@@ -10,6 +7,9 @@ LAUNCH="SanctuaryRPG.exe"
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='setup_sanctuary_rpg_black_*.exe'
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
 
 ## Wine configuration:
 wineBits="32"

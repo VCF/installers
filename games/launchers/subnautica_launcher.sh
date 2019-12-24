@@ -1,8 +1,5 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="Subnautica"
 LAUNCH="Steam.exe"
@@ -13,6 +10,9 @@ LAUNCHARGS="-no-cef-sandbox -applaunch 264710 -force-glcore45"
 ## Location of the installer:
 INSTDIR="Other/Steam"
 INSTNAME='SteamSetup.exe'
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
 
 ## Wine configuration:
 wineBits="64"

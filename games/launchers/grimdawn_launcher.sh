@@ -1,8 +1,5 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="Grim Dawn"
 LAUNCH="Grim Dawn.exe"
@@ -11,6 +8,9 @@ LAUNCH="Grim Dawn.exe"
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='setup_grim_dawn_*.exe'
 INSTICON="$PROGDIR.png"
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
 
 ## Wine configuration:
 wineBits="32"

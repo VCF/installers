@@ -1,8 +1,5 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="Craft the World"
 LAUNCH="CraftWorld.exe"
@@ -10,6 +7,9 @@ LAUNCH="CraftWorld.exe"
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='setup_craft_the_world_*.exe'
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
 
 ## Wine configuration:
 wineBits="32"

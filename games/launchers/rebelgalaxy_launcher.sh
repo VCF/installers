@@ -1,8 +1,5 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="Rebel Galaxy"
 LAUNCH="RebelGalaxyGOG.exe"
@@ -10,6 +7,9 @@ LAUNCH="RebelGalaxyGOG.exe"
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='setup_rebel_galaxy_*.exe'
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
 
 ## Wine configuration:
 wineBits="32"

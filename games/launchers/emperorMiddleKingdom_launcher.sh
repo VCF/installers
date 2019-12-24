@@ -1,8 +1,5 @@
 #!/bin/bash
 
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
 ## Location of the executable:
 PROGDIR="Emperor - Rise of the Middle Kingdom"
 LAUNCH="Emperor.exe"
@@ -10,6 +7,9 @@ LAUNCH="Emperor.exe"
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='setup_emperor_rise_of_the_middle_kingdom_*.exe'
+
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
 
 ## Wine configuration:
 wineBits="32"

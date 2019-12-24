@@ -1,7 +1,5 @@
 #!/bin/bash
 
-### Shares installer with Sentinels sequel
-
 ## Location of the executable:
 PROGDIR="Fallout 2"
 LAUNCH="fallout2.exe"

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-### Shares installer with Sentinels sequel
-
 ## Location of the executable:
 PROGDIR="SotS The Pit"
 LAUNCH="ThePit.exe"

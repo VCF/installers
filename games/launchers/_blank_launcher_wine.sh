@@ -3,6 +3,10 @@
 ## Location of the executable:
 PROGDIR="Name of Directory After Installation"
 LAUNCH="whatActuallyRunsTheProgram.exe"
+## Arguments to pass to the executable when running:
+## LAUNCHARGS="-nogui -res=640x320"
+## Subdirectory in the program folder to change to before running:
+## PROGSUBDIR="bin"
 
 ## Location of the installer on your file system:
 INSTDIR="GOG/$PROGDIR"
@@ -23,6 +27,8 @@ WINEARCH="win$wineBits"
 WINETARGET="Program Files/Foo Bar"
 ## Any winetricks that might be needed:
 ## INSTTRICKS="d3dx9_43 wmp9 wmp10"
+## Switches passed to Wine when running application
+## WINEARGS="-windowed"
 
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
@@ -45,5 +51,10 @@ INSTICON="$PROGDIR.png"
 #function RUNFUNCTION {
 #  echo "For example, configuring the system in some way"
 #}
+
+## Notes shown before program is executed
+#PRERUN="
+#If the program asks to choose a flavor, please select 'Tepid Mango'
+#"
 
 find_and_run_executable "$@"

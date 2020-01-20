@@ -8,11 +8,11 @@
 ######## SETTINGS ########
 
 ##---------------------------------------------------------------------
-## INSTROOT is where you keep your installer files. You need to
-## provide at least one location, but you can provide others. Each
-## location should be on its own line. The scripts will look in each
-## location in order, and take the first matching installer file they
-## find
+## INSTDIRS defines one or more directory locations where you keep
+## your installer files. You need to provide at least one location,
+## but you can provide others. Each location should be on its own
+## line. The scripts will look in each location in order, and take the
+## first matching installer file they find
 INSTDIRS="
 $HOME/Downloads
 /harmless/example/myinstallers

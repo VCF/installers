@@ -1,52 +1,7 @@
 #!/bin/bash
 
-## Library of functions used to install and launch games. Installed
-## games are expected to be in $GAMEDIR (above). Launching will look
-## for two environment variables:
-
-##    $PROGDIR - The first-level subdirectory of $GAMEDIR
-##    $LAUNCH  - The name of the executable (can include additional subdirs)
-## $LAUNCHARGS - Optional arguments to pass to the executable
-## $PROGSUBDIR - Optional subdirectory. Used to set initial path of run
-
-## If the file is found:
-##   * If it is executable, it will be launched.
-##   * If it is a Java .jar file, it will be launched with java
-## In both cases STDOUT will be captured in $LOGFILE (above), written
-## to $PROGDIR. Additional run variables:
-##   * $PRERUN     : Will show before running program
-##   * $POSTRUN    : Will show after running
-##   * $NOREDIRECT : Allows STDOUT to stream to terminal
-
-## If the launcher is not found, then the installer directory
-## $INSTROOT (above) will be checked to see if the instal file
-## $INSTNAME can be found in directory $INSTDIR. If those variables
-## are set and the installer is found:
-##   * If it is a .sh it will be run
-##   * If a zip/bz2/bzip2/xz it will be extracted
-## Additional installation variables
-##   * INSTRENAME  : set to "foo/bar", will try to rename 'foo' to 'bar'
-##                   The 'from' part can contain '*' wildcards
-##   * APTPACKAGES : Will install the listed pacakges as needed, via apt
-##   * INSTAPT     : will show the contents as suggested libraries
-##   * INSTHELP    : will suggest contents as installation help source
-##   * INSTCOPY    : Not really an installation, just copy the program
-##   * INSTSAVEDIR : will be moved to Documents/GameFiles then symlinked
-##                   For Wine locations, can begin with 'drive_c/'
-##                   'NONE' indicates no dir exists, don't nag about it
-##   * DORSYNC     : If set then backup via rsync rather than dated tar.gz
-##   * NOAUTOBACK  : Do not automatically backup the save files
-##   * INSTICON    : custom icon file name (basename) for launcher
-##   * INSTGIT     : A URL to a git repository to clone
-##   * INSTFUNCTON : custom function that runs AFTER installation
-##   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
-##   * WINEARGS    : Switches passed to Wine when running application
-##   * INSTTRICKS  : winetricks needed by a Windows program
-##   * NOTINTERM   : Do not run program in terminal
-##   * RUNFUNCTION : bash function to run before launching program
-##   * UNPACKDIR   : If decompressing needs a subfolder created first
-
-## Copyright (C) 2017 Charles A. Tilford
+## Library of functions used to install and launch applications in Linux.
+## Copyright (C) 2020 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
 
 LICENSE_GPL3="
@@ -66,6 +21,130 @@ LICENSE_GPL3="
 
 "
 
+pFile="$HOME/.vcfInstallerPrefs.sh" # Path to preferences file
+
+launcherHelpTxt="
+
+Installed programs will be placed in \$GAMEDIR, which is defined in a
+configuration file at:
+
+  $pFile
+
+When this libarary is called by a specific program's installer script,
+it will look for the following parameters:
+
+  * WINETARGET  : Subfolder generated on your Wine C: drive by installation
+  * PROGDIR     : The first-level subdirectory of \$GAMEDIR
+  * LAUNCH      : The name of the executable (can include additional subdirs)
+  * LAUNCHARGS  : Optional arguments to pass to the executable
+  * PROGSUBDIR  : Optional subdirectory. Used to set initial path of run
+
+If the file specified by \$LAUNCH is found:
+
+  * If it is executable, it will be executed.
+    * ... by Wine, if a Windows executable
+  * If it is a Java .jar file, it will be launched with java
+
+In all cases STDOUT will be captured in \$LOGFILE (named in your
+preferences), which is written to \$PROGDIR.
+
+If the launcher is not found, then the installer directories defined
+by \$INSTDIRS (set in preferences) will be searched to see if the
+install file \$INSTNAME can be found in any of those directories. If
+those variables are set and the installer is found:
+
+  * If it is a .sh or .appimage it will be run
+  * If a zip/bz2/bzip2/xz it will be extracted
+  * If a Windows .exe, it will be launched with Wine
+
+When the installer finishes, a shortcut will be created on your
+desktop. That shortcut will re-launch the script, which should now
+simply launch the program. You can define an icon for this shortcut,
+the \$ICONDIRS directories (defined in your preferences) will be
+searched for the icon file:
+
+  * INSTICON    : custom icon file name for launcher shortcut
+
+For Windows programs, the following variables can be set:
+
+  * WINETARGET  : Subfolder generated on your Wine C: drive by installation
+  * WINEARGS    : Switches passed to Wine when running application
+  * INSTTRICKS  : winetricks needed by a Windows program
+  * WINEPREFIX  : A prefix (folder) for the Wine installation
+  * WINEARCH    : The architecture, either win32 or win64
+
+Some special-case installer options are:
+
+  * INSTGIT     : A URL to a git repository to clone
+  * INSTCOPY    : A flag to indicate that the 'installer' just needs to
+                  be copied (it's ready to run as-is)
+
+An annoyance dealing with multiple programs is tracking where they
+store your information (settings & preferences, save files, etc). In
+order to make it easier to backup such information, the installer
+script can specify a (single) path to such information, and then move
+it to a central location (leaving behind a symlink in the 'expected'
+location so the program still runs. The central location is defined by
+\$SAVEDIR in your preferences file. Your installer script can specify
+the program's location with:
+
+  * INSTSAVEDIR : will be moved to \$SAVEDIR then symlinked.
+                  For Wine locations, can begin with 'drive_c/' 
+                  'NONE' indicates no dir exists, don't nag about it
+
+Further when the launcher script finishes, it can automatically backup
+that folder. Backups will be copied to \$BACKUPDIR, which is defined
+in your preferences file, and are normally YYYY-MM-DD.tar.gz
+files. Parameters controlling this functionality are:
+
+  * DORSYNC     : If set then backup via rsync rather than dated tar.gz
+  * RSYNCDIR    : Specifies a folder to be DIRECTLY backed up via rsync
+                  (for use when the program does not tolerate the symlink)
+  * NOAUTOBACK  : Do not automatically backup the save files
+
+There are few occasional tweaks to installation that can be useful:
+
+  * APTPACKAGES : Will install the listed pacakges as needed, via apt
+  * INSTRENAME  : If set to 'foo/bar', will try to rename just-installed
+                  directory 'foo' to 'bar'. The 'from' part can contain
+                  '*' wildcards.
+  * INSTFUNCTON : custom function that runs AFTER installation. Use when
+                  you need truly esoteric fixes following install
+  * UNPACKDIR   : If decompressing needs a subfolder created first
+                  (used when archive does not have a top-level folder)
+
+Additional installation variables
+
+  * INSTAPT     : will echo the contents as suggested libraries
+  * INSTHELP    : will echo contents as installation help source
+  * NOTINTERM   : Do not run program in terminal
+  * RUNFUNCTION : bash function to run before launching program
+                  Useful when program needs coddling before launch
+
+Additional options when the program itself is run:
+
+  * PRERUN     : A message shown before running program
+  * POSTRUN    : A message shown after running
+  * NOREDIRECT : Sets STDOUT to stream to terminal rather than \$LOGFILE
+
+The repository containing this library also holds several template
+installation scripts that have more details for each parameter. They
+are:
+
+  * games/launchers/_blank_launcher_script.sh
+    Template for a script installer
+  * games/launchers/_blank_launcher_archive.sh
+    Template for a program that is installed from a zip/gz/tar etc
+  * games/launchers/_blank_launcher_wine.sh
+    Template for a Windows executable installer
+
+"
+## Library of functions used to install and launch games. Installed
+## games are expected to be in $GAMEDIR (above). Launching will look
+## for two environment variables:
+
+
+
 ## script folder: https://stackoverflow.com/a/246128
 myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . "$myLaunchDir/../../generalUtilities/_util_functions.sh"
@@ -75,7 +154,6 @@ fileCol=$(ansiStart "$FgMagenta")
 cDrive=""
 
 function loadPrefs {
-    pFile="$HOME/.vcfInstallerPrefs.sh"
     if [[ ! -f "$pFile" ]]; then
         src="$myLaunchDir/../../blankTemplatePrefFile.sh"
         cp "$src" "$pFile"
@@ -117,6 +195,7 @@ function launcherHelp {
     msg "$FgBlue" "\nThis is a launcher file for \"$PROGDIR\""
     helpTxt="
       help - Show this help
+scripthelp - Show help for making / editting launchers
   shortcut - Will make a desktop shortcut for you"
     if [[ -n "$INSTDIR" || -n "$INSTGIT" ]]; then
         msg "$FgCyan" "  It can auto-install the program"
@@ -160,6 +239,11 @@ function find_and_run_executable {
     if [[ $(hasParam "$1" "run") ]]; then
         ## Explicit request to run the game - just move on from elif block
         ""
+    elif [[ $(hasParam "$1" "scripthelp") ]]; then
+        ## Show help for making scripts
+        ## Wasted time trying to get sed to wrap [A-Z] parameters in
+        ## ANSI color codes ...
+        msg "$FgBlue" "$launcherHelpTxt"; return
     elif [[ $(hasParam "$1" "help") ]]; then
         ## Show help
         launcherHelp; return
@@ -1281,15 +1365,26 @@ function customRunFunction {
 }
 
 function backupGameFiles {
-    ## If INSTSAVEDIR is not set, presume we have not normalized the save path
-    [[ -z "$INSTSAVEDIR" ]] && return
-    SrcFolder="$SAVEDIR/$PROGDIR"
-    if [[ -z "$DORSYNC" ]]; then
-        msg "$BgBlue;$FgYellow" "Backing up... $SrcFolder"
-        archiveFolder "$SrcFolder" "GameFiles"
+    ## If neither INSTSAVEDIR nor RSYNCDIR is set, presume we have not
+    ## normalized the save path (or it is not defined)
+    [[ -z "$INSTSAVEDIR" && -z "$RSYNCDIR" ]] && return
+    
+    if [[ -n "$RSYNCDIR" ]]; then
+        ## Backup via rsync, but from a specific location
+        msg "$BgBlue;$FgYellow" "Synchronizing... $RSYNCDIR"
+        rsyncFolder "$RSYNCDIR/" "GameFiles/$PROGDIR"
     else
-        msg "$BgBlue;$FgYellow" "Synchronizing... $SrcFolder"
-        rsyncFolder "$SrcFolder" "GameFiles"
+        ## Save directory is defined
+        SrcFolder="$SAVEDIR/$PROGDIR"
+        if [[ -n "$DORSYNC" ]]; then
+            ## Backup via rsync from a normalized location
+            msg "$BgBlue;$FgYellow" "Synchronizing... $SrcFolder"
+            rsyncFolder "$SrcFolder" "GameFiles"
+        else
+            ## Backup via tar/gzip
+            msg "$BgBlue;$FgYellow" "Backing up... $SrcFolder"
+            archiveFolder "$SrcFolder" "GameFiles"
+        fi
     fi
 }
 

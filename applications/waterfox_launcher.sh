@@ -10,18 +10,19 @@ INSTNAME='waterfox-*.en-US.linux-x86_64.tar.bz2'
 INSTRENAME='waterfox/'"$PROGDIR"
 INSTICON="$PROGDIR.png"
 
-PRERUN="Waterfox Firefox fork
-  https://www.waterfoxproject.org/
-  https://github.com/MrAlex94/Waterfox
-"
+DORSYNC="YES" # Backup profile directory by rsync, not tar.gz
 
 my_dir="$(dirname "$0")"
 xpiDir="$my_dir/PreWebExtensionsXPIs"
 . "$my_dir/_launcher_functions.sh"
 
-function INSTFUNCTION {
-
+## We need to do a few tweaks to the profile directory, mainly copying
+## in XPI files and normalizing its location. We can't do that until
+## Waterfox runs at least once, so test for that in the body here:
+function standardizeProfile {
     profDir="$HOME/.waterfox"
+    stndShort="stndProfile"
+    stndProf="$profDir/$stndShort"
     if [[ ! -d "$profDir" ]]; then
         msg "$FgYellow" "
 
@@ -31,9 +32,14 @@ relaunch this script with:
 "
         return
     fi
-    stndShort="stndProfile"
-    stndProf="$profDir/$stndShort"
-    if [[ ! -d "$stndProf" ]]; then
+    
+    if [[ -d "$stndProf" ]]; then
+        ## We have already made a normalized symlink
+        ## In order to define INSTSAVEDIR we still need its target
+        defProf="$profDir/$(readlink "$stndProf")"
+    else
+        ## Normalize the profile directory to a standard name
+        ## This normalized link is sought by some other functions
         defProf=$(find "$profDir" -name '*.default' | head -n1)
         if [[ -z "$defProf" ]]; then
             msg "$FgRed" "
@@ -48,12 +54,18 @@ I failed to find the default profile in:
 "
         ln -s "$defProf" "$stndProf"
     fi
-
+    ## We will also set the "save diretory" to the profile
+    INSTSAVEDIR="$defProf"
+    saveLocation
+    
     ## Make sure the extensions directory is created
     mkdir -p "$stndProf/extensions"
 
     ## Copy over extensions
     targDir="$stndProf/extensions"
+    copyDone="$targDir/vcfDoneXpiCopy"
+    [[ -s "$copyDone" ]] && return
+    
     msg "$FgBlue" "  Adding XPI extensions to profile:\n    '$targDir'"
     ## Oof. Reading from `find`: https://stackoverflow.com/a/23357277
     while IFS=  read -r -d $'\0'; do
@@ -92,6 +104,14 @@ I failed to find the default profile in:
         fi
         rm -rf "$td"
     done < <(find "$xpiDir" -name '*.xpi' -print0)
+    date > "$copyDone"
 }
+standardizeProfile
+
+PRERUN="Waterfox Firefox fork
+  https://www.waterfoxproject.org/
+  https://github.com/MrAlex94/Waterfox
+"
+
 
 find_and_run_executable "$@"

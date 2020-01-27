@@ -1233,11 +1233,20 @@ Once the parent exists, run:
     ## Finally, put a symlink in the "expected" location pointing to
     ## the normalized one.
     ln -s "$TargDir" "$isd"
-    UNKNOWNSAVE=""
-    msg "$FgBlue" "Save files linked to standard location in 
+    if [[ -L "$isd" && -d "$isd" ]]; then
+        UNKNOWNSAVE=""
+        msg "$FgBlue" "Save files linked to standard location in 
   $SAVEDIR
   Symlink in: \"$isd\"
 "
+    else
+        msg "$FgRed" "Attempt to symlink save files appears to have failed.
+  Attempted: 
+  New Location: \"$TargDir\"
+  Old Location: \"$isd\"
+"
+        UNKNOWNSAVE="Failed to create expected save symlink"
+    fi
 }
 
 function fallBackPath {

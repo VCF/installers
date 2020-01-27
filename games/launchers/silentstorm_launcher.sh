@@ -3,16 +3,28 @@
 ### Shares installer with Sentinels sequel
 
 ## Location of the executable:
-PROGDIR="SilentStorm"
+PROGDIR="Silent Storm"
 PROGSUBDIR="Silent Storm"
 LAUNCH="game.exe"
 ## Location of the installer:
 INSTDIR="GOG/Silent Storm"
 INSTNAME='setup_silent_storm_*.exe'
-## Installation post-processing:
-WINETARGET="Program Files (x86)/GOG.com/Silent Storm GOLD"
+
+###### configuration:
+## Should we use 32- or 64-bit environment?
+wineBits="32"
+## Define the prefix (folder) for the Wine installation:
+WINEPREFIX="$HOME/Wine$wineBits"
+## Set the architecture being used for Wine:
+WINEARCH="win$wineBits"
+## The location of the installed program in drive_c:
+WINETARGET="Program Files/GOG.com/Silent Storm GOLD"
+
 INSTSAVEDIR="$PROGSUBDIR/save"
-INSTICON="$PROGDIR.png"
+## Flag to use if backup should use rsync rather than tar/gzip:
+DORSYNC="yes"
+## Filename of launcher icon (looks in default folders):
+INSTICON="SilentStorm.png"
 ## Notes:
 PRERUN="
 WineHQ Platinum

@@ -4,6 +4,7 @@
 ## Copyright (C) 2020 Charles A. Tilford
 ##   Where I have used (or been inspired by) public code it will be noted
 
+myself="$(basename "$0")"
 LICENSE_GPL3="
 
     This program is free software: you can redistribute it and/or
@@ -76,6 +77,9 @@ For Windows programs, the following variables can be set:
 Some special-case installer options are:
 
   * INSTGIT     : A URL to a git repository to clone
+  * INSTREPO    : The name of the program in your system's native
+                  repository, will just install from there. Useful
+                  when you desire the other bells & whistles (eg backup)
   * INSTCOPY    : A flag to indicate that the 'installer' just needs to
                   be copied (it's ready to run as-is)
 
@@ -289,8 +293,8 @@ Program directory not found, expected at:
 
     ## Nothing found. Can we install?
     if [[ -z "$TRIEDINSTALL" ]]; then
-       installGame
-       return
+        installGame
+        return
     fi
     
     ## Nothing found in any of the paths:
@@ -303,12 +307,20 @@ Failed to find executable in $GAMEDIR
 }
 
 function runGame {
-
-    EXECUTABLE="$GAMEDIR/$PROGDIR"
-    [[ -z "$PROGSUBDIR" ]] || EXECUTABLE="$EXECUTABLE/$PROGSUBDIR"
-    EXECUTABLE="$EXECUTABLE/$LAUNCH"
-    [[ -s "$EXECUTABLE" ]] || return
-    extSfx="${LAUNCH##*.}"
+    if [[ -n "$INSTREPO" ]]; then
+        ## 'Native' application
+        EXECUTABLE="$(which "$LAUNCH")"
+        [[ -f "$EXECUTABLE" ]] || return
+        stubProgDir "$EXECUTABLE"
+    else
+        EXECUTABLE="$GAMEDIR/$PROGDIR"
+        ## Add the subdirectory if needed:
+        [[ -z "$PROGSUBDIR" ]] || EXECUTABLE="$EXECUTABLE/$PROGSUBDIR"
+        EXECUTABLE="$EXECUTABLE/$LAUNCH"
+        ## If it's not there, leave
+        [[ -s "$EXECUTABLE" ]] || return
+        extSfx="${LAUNCH##*.}"
+    fi
 
     ## The executable appears to be present
     TRIEDINSTALL="Already installed"
@@ -368,22 +380,26 @@ function runExecutable {
     msg "$FgGreen" "  Running $EXECUTABLE"
     [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
 
+    doLaunch="./$LAUNCH"
+    ## Don't use absolute paths for system programs:
+    [[ -n "$INSTREPO" ]] && doLaunch="$EXECUTABLE"
+    
     set_title "Run $PROGDIR";
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
         if [[ -n "$LAUNCHARGS" ]]; then
-            "./$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
+            "$doLaunch" "$LAUNCHARGS" &>> "$LOG"
         else
-            "./$LAUNCH" &>> "$LOG"
+            "$doLaunch" &>> "$LOG"
         fi
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
         if [[ -n "$LAUNCHARGS" ]]; then
-            "./$LAUNCH" "$LAUNCHARGS"
+            "$doLaunch" "$LAUNCHARGS"
         else
-            "./$LAUNCH"
+            "$doLaunch"
         fi
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
@@ -489,7 +505,7 @@ function installGame {
 
     [[ -n "$PREINST" ]] && msg "$BgYellow" "$PREINST"
 
-    checkOtherPackages
+    checkAptPackages "$APTPACKAGES"
 
 
     if [[ -n "$INSTGIT" ]]; then
@@ -524,9 +540,12 @@ Launcher not found
     
     determineSuffix
 
-    if [[ ! -z "$INSTCOPY" ]]; then
+    if [[ -n "$INSTCOPY" ]]; then
         ## Installation is simply copying the file to a new location
         installCopy
+    elif [[ -n "$INSTREPO" ]]; then
+        ## We're installing from the distribution's repository
+        installRepo
     elif [[ $sfx == "exe" ]]; then
         installWine
     elif [[ $sfx == "sh" ]]; then
@@ -648,6 +667,32 @@ Copying executable $installer to:
   $gp
 "
     cp "$installer" "$EXECUTABLE"
+}
+
+function installRepo {
+    ## Function installs from the distribution's repository
+    TRIEDINSTALL="Distribution's repo: $INSTREPO"
+    checkAptPackages "$INSTREPO"
+}
+
+function stubProgDir {
+    ## Just makes sure $PROGDIR is in place, since even if it does not
+    ## actually hold the executable it is used by other functions
+    gp="$GAMEDIR/$PROGDIR"
+    [[ -d "$gp" ]] || mkdir -p "$gp"
+
+    ## Also make a readme:
+    readme="$gp/README.md"
+    [[ -s "$readme" ]] || echo "## $PROGDIR 'program' directory
+
+This isn't _really_ the program directory for $PROGDIR, but it is used
+by a utility script to wrap that program in some additional
+functionality.
+
+* Utility: \`$0\`
+* Actual Program: \`$1\`
+
+" > "$readme"
 }
 
 function installShell {
@@ -987,6 +1032,7 @@ $hBar
         targLnk="$targDir"
         targDir="$(readlink -f "$targDir")"
     fi
+
     saveLocation
     if [[ -z "$UNKNOWNSAVE" ]]; then
         sd="$SAVEDIR/$PROGDIR"
@@ -1184,7 +1230,9 @@ If you know the folder that contains save files, please define it with:
         sTarg=$(readlink -f "$TargDir")
         if [[ "$tTarg" == "$sTarg" ]]; then
             msg "$FgCyan" "Save files already linked from
-  ${fileCol}'$isd'"
+  ${fileCol}'$isd'
+  -> $TargDir
+"
             UNKNOWNSAVE=""
        else
             err "Save files are linked, but not to expected location:
@@ -1276,7 +1324,6 @@ function desktopIcon {
     if [[ -s "$dt" ]]; then
         ## Do nothing else if it is already there ... unless the
         ## launcher was made by some other program
-        myself="$(basename "$0")"
         isOk=$(grep "$myself" "$dt")
         ## If the launcher refers to the launch script, move on
         [[ -n "$isOk" ]] && return
@@ -1319,7 +1366,7 @@ re-run the installer.
 
     ## I keep ending up with weird executables...
     exeDir="$(readlink -f "$myLaunchDir")" # Launcher directory
-    exeExe="$(basename "$0")"              # Launcher script name
+    exeExe="$myself"              # Launcher script name
     Exec="$exeDir/$exeExe" # Absolute launcher path, de-linkified
 
     if [[ -z "$NOTINTERM" ]]; then
@@ -1397,11 +1444,6 @@ function backupGameFiles {
     fi
 }
 
-function checkOtherPackages {
-    checkAptPackages
-}
-
-
 function linesToArray {
     ## $1 - a multiline string to be split
     ## Split string on newlines: https://stackoverflow.com/a/19772067
@@ -1452,23 +1494,23 @@ function firstFileLocation {
 }
 
 function checkAptPackages {
+    myPkg="$1"
+    [[ -z "$myPkg" ]] && return # nothing actually required
+    
     chkDp=$(which dpkg)
     if [[ -z "$chkDp" ]]; then
-        ## Ignore if dpkg is not present
-        [[ -n "$APTPACKAGES" ]] && msg "$BgYelow" "
+        msg "$BgYelow" "
 APT packages are specified but your system does not seem to support apt
   You may need to install the appropriate counterparts for your system:
-$APTPACKAGES
+$myPkg
 "
         return
     fi
-    [[ -z "$APTPACKAGES" ]] && return # nothing required anyway
 
     msg "$FgCyan" "Checking for system requirements..."
     sudoAlert=""
-    ## Split string on newlines: https://stackoverflow.com/a/19772067
-    IFS=$'\n' read -rd '' -a PKGLIST <<< "$APTPACKAGES"
-    for pkgname in "${PKGLIST[@]}"; do
+    linesToArray "$myPkg" ## Break out requests as one-per-line
+    for pkgname in "${SPLITLINES[@]}"; do
         stat=$(dpkg -s "$pkgname" 2> /dev/null | grep '^Status' | grep 'installed')
         if [[ -n "$stat" ]]; then
             msg "$FgGreen;$BgWhite" "  Installed: $pkgname  "
@@ -1482,6 +1524,5 @@ $APTPACKAGES
         msg "$FgYellow;$BgWhite" "  Required: $pkgname  "
         sudo apt-get -y install "$pkgname"
     done
-    
 }
 

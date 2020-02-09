@@ -11,6 +11,8 @@ user_pref("accessibility.typeaheadfind.flashBar", 0);
 // ?
 user_pref("browser.contentblocking.category", "standard");
 
+// Warn the user if quitting out of the browser
+user_pref("browser.sessionstore.warnOnQuit", true);
 // ?
 user_pref("browser.ctrlTab.migrated", true);
 // ?
@@ -71,7 +73,10 @@ user_pref("extensions.https_everywhere.firstrun_context_menu", false);
 // ****************************************************************8
 // Various odious FF junk
 
+
 user_pref("browser.bookmarks.showMobileBookmarks", false);
+user_pref("browser.messaging-system.fxatoolbarbadge.enabled", false);
+user_pref("browser.messaging-system.whatsNewPanel.enabled", false);
 user_pref("browser.newtabpage.activity-stream.asrouter.providers.snippets", {});
 user_pref("browser.newtabpage.activity-stream.feeds.section.highlights", false);
 user_pref("browser.newtabpage.activity-stream.feeds.snippets", false);
@@ -83,6 +88,8 @@ user_pref("browser.onboarding.seen-tourset-version", 4);
 user_pref("browser.ping-centre.production.endpoint", "https://example.com");
 user_pref("browser.ping-centre.staging.endpoint", "https://example.com");
 user_pref("devtools.onboarding.telemetry.logged", true);
+user_pref("devtools.whatsnew.enabled", false);
+user_pref("devtools.whatsnew.feature-enabled", false);
 user_pref("experiments.activeExperiment", false);
 user_pref("extensions.htmlaboutaddons.recommendations.enabled", false);
 user_pref("extensions.pocket.api", "example.com");

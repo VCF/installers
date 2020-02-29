@@ -39,15 +39,12 @@ DORSYNC="yes"
 
 ## Custom function to run after installation:
 function INSTFUNCTION {
+    ## Magic not usable unless the control key is set to invoke it:
     PDIR="$GAMEDIR/$PROGDIR"
-    echo "$PDIR/cfg_default.ini" |
+    cat "$PDIR/cfg_default.ini" |
         sed 's/magic_mode_k0=---/magic_mode_k0=LControl/' >
     "$PDIR/cfg.ini"
 }
-## Custom function to run each time just before running the program:
-#function RUNFUNCTION {
-#  echo "For example, configuring the system in some way"
-#}
 
 ## Notes shown before program is executed
 PRERUN="

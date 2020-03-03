@@ -550,16 +550,6 @@ Launcher not found
         installWine
     elif [[ $sfx == "sh" ]]; then
         TRIEDINSTALL="SHELL: $installer"
-        if [[ ! -x "$installer" ]]; then
-            ## Installer isn't executable - try to fix:
-            chmod u+x "$installer"
-            if [[ -x "$installer" ]]; then
-                msg "$FgBlue" "  Updated installer to be executable..."
-            else
-                failedNotExecutable
-                return
-            fi
-        fi
         installShell
     elif [[ $sfx == "bz2" || $sfx == "bzip2" ]]; then
         ## bzip archive
@@ -696,6 +686,16 @@ functionality.
 }
 
 function installShell {
+    if [[ ! -x "$installer" ]]; then
+        ## Installer isn't executable - try to fix:
+        chmod u+x "$installer"
+        if [[ -x "$installer" ]]; then
+            msg "$FgBlue" "  Updated installer to be executable ..."
+        else
+            failedNotExecutable
+            return
+        fi
+    fi
     msg "$FgMagenta" "
 Preparing to install:
   $installer

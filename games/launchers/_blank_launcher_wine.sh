@@ -35,6 +35,8 @@ INSTICON="$PROGDIR.png"
 
 ## Specify any required APT packages:
 ## APTPACKAGES='libsdl2-mixer-2.0-0'
+## Normally a new terminal is opened to launch. Flag to prevent this:
+## NOTINTERM="No launching terminal"
 
 ## Location of the programs save files / config:
 ## INSTSAVEDIR="$HOME/.config/foobar"

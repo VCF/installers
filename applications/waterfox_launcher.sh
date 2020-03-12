@@ -9,6 +9,7 @@ INSTNAME='waterfox-*.en-US.linux-x86_64.tar.bz2'
 ## Installation post-processing:
 INSTRENAME='waterfox/'"$PROGDIR"
 INSTICON="$PROGDIR.png"
+NOTINTERM="YES"
 
 DORSYNC="YES" # Backup profile directory by rsync, not tar.gz
 

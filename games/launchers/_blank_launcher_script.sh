@@ -41,10 +41,8 @@ INSTICON="$PROGDIR.png"
 #}
 
 ## Notes shown before program is executed
-PRERUN="
-WineHQ Platinum/Gold/Silver/Bronze/Garbage
-  https://appdb.winehq.org/linkToWineHQpage
-
-"
+#PRERUN="
+#  Any message you want the installer to display before running
+#"
 
 find_and_run_executable "$@"

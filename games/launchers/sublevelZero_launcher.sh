@@ -9,8 +9,11 @@ INSTDIR="GOG/$PROGDIR"
 INSTNAME='gog_sublevel_zero_*.sh'
 
 ## Specify any required APT packages:
-## Make sure a couple 32-bit packages are available:
-APTPACKAGES='libxcursor1:i386 libxrandr2:i386'
+## Tried installing 32-bit libraries one-by-one, but there are a LOT,
+## apparently needed by Unity. So just install ALL of them. Will
+## likely be needed for other games as well.
+# APTPACKAGES='libxcursor1:i386 libxrandr2:i386'
+APTPACKAGES='ia32-libs'
 
 ## Source Utility functions
 my_dir="$(dirname "$0")"
@@ -21,12 +24,5 @@ INSTICON="$PROGDIR.png"
 
 ## Location of the programs save files / config:
 INSTSAVEDIR="$HOME/.config/unity3d/SIGTRAP Games/SublevelZero"
-
-## Identical problem on a different game (core dump on Unity import of
-## game controller config) where the program wasn't finding local
-## 32-bit libraries
-
-## https://steamcommunity.com/app/416770/discussions/0/492379439687359165/?ctp=2#c492379439688639977
-export LD_LIBRARY_PATH=. %command%
 
 find_and_run_executable "$@"

@@ -2,15 +2,12 @@
 
 ## Location of the executable:
 PROGDIR="Minecraft"
-LAUNCH="minecraft.jar"
-JAVACMD="/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java"
+LAUNCH="minecraft-launcher"
 ## Location of the installer:
-APTPACKAGES="openjdk-8-jre"
-INSTDIR="/abyss/Common/$PROGDIR/Executable"
-INSTNAME="$LAUNCH"
-INSTCOPY=true # Installation is just a copy
+INSTDIR="Minecraft"
+INSTNAME="Minecraft-*.deb"
 INSTHELP="To update, visit: https://minecraft.net/download
-  Save with versioned filename, then update symlink to $LAUNCH
+  Save with versioned filename
 "
 ## Installation post-processing:
 INSTSAVEDIR="$HOME/.minecraft/saves"

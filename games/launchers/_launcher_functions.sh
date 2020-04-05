@@ -307,7 +307,8 @@ Failed to find executable in $GAMEDIR
 }
 
 function runGame {
-    if [[ -n "$INSTREPO" ]]; then
+    determineSuffix "$INSTNAME"
+    if [[ -n "$INSTREPO" || $sfx == "deb" ]]; then
         ## 'Native' application
         EXECUTABLE="$(which "$LAUNCH")"
         [[ -f "$EXECUTABLE" ]] || return
@@ -382,7 +383,8 @@ function runExecutable {
 
     doLaunch="./$LAUNCH"
     ## Don't use absolute paths for system programs:
-    [[ -n "$INSTREPO" ]] && doLaunch="$EXECUTABLE"
+    determineSuffix "$INSTNAME"
+    [[ -n "$INSTREPO" || $sfx == "deb" ]] && doLaunch="$EXECUTABLE"
     
     set_title "Run $PROGDIR";
     LogNote=""
@@ -569,6 +571,9 @@ Launcher not found
     elif [[ $sfx == "appimage" ]]; then
         ## zip archive
         installAppImage
+    elif [[ $sfx == "deb" ]]; then
+        ## Debian package file
+        installDebian
     else
         ## No idea!
         failedUnknown
@@ -621,11 +626,12 @@ $INSTDIRS
 function determineSuffix {
     ##  Lower case in bash: https://stackoverflow.com/a/2264537
     ## Parameter Expansion: https://stackoverflow.com/a/965069
-
-    hasDot="$(echo "$installer" | grep '\.')"
+    instName="${1:-$installer}"
+    
+    hasDot="$(echo "$instName" | grep '\.')"
     if [[ -z "$hasDot" ]]; then
         ## This file does not appear to have a suffix
-        isExe="$(file "$installer" | grep -i 'executable')"
+        isExe="$(file "$instName" | grep -i 'executable')"
         if [[ -n "$isExe" ]]; then
             ## Looks to be executable - let's set suffix as "sh"
             sfx="sh"
@@ -634,10 +640,10 @@ function determineSuffix {
             sfx="NoSuffix"
         fi
     else
-        sfx=$(echo "${installer##*.}" | tr '[:upper:]' '[:lower:]')
+        sfx=$(echo "${instName##*.}" | tr '[:upper:]' '[:lower:]')
     fi
     ## Also see if this looks like a TAR archive
-    unTar=$(isTarArchive "$installer")
+    unTar=$(isTarArchive "$instName")
 }
 
 function isTarArchive {
@@ -663,6 +669,34 @@ function installRepo {
     ## Function installs from the distribution's repository
     TRIEDINSTALL="Distribution's repo: $INSTREPO"
     checkAptPackages "$INSTREPO"
+}
+
+function installDebian {
+    ## Installing a Debian .deb package file
+    TRIEDINSTALL="Debian package: $installer"
+    msg "$FgMagenta" "
+Preparing to install:
+  $installer
+Unless you've run sudo recently, you will be asked for your password
+  Several supporting packages will likely also be installed
+"
+    ## Ugh. apt is unhappy if the path contains spaces. Bounce to the dir:
+    priorPwd=$(pwd)
+    cd "$(dirname "$installer")"
+    fn=$(basename "$installer")
+    ## Also need to prefix file with ./
+    ##   https://unix.stackexchange.com/a/159114
+    sudo apt install "./$fn"
+    cd "$priorPwd" # Return to original directory
+    CHK=$(which "$EXECUTABLE")
+    if [[ -z "$CHK" ]]; then
+        msg "$FgRed" "
+Installation appears to have failed? The expected executable:
+  $EXECUTABLE
+... could not be located.
+"
+        exit
+    fi
 }
 
 function stubProgDir {

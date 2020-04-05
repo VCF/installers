@@ -42,8 +42,14 @@ function INSTFUNCTION {
     install_git_custom "minetest" "minetest_game" "" \
                        "games/minetest_game" "--depth 1"
 
+    GhUrl="https://codeload.github.com"
+    GlUrl="https://gitlab.com"
+    NabUrl="https://notabug.org"
+    mTm="minetest-mods"
+
     ## Reasonably good games
-    install_zip_custom "https://codeload.github.com/minetest-LOTR/Lord-of-the-Test/zip/v1.1.0" "games" "Lord-of-the-Test-1.1.0"
+    install_zip_custom "$GhUrl/minetest-LOTR/Lord-of-the-Test/zip/v1.2.1" \
+                       "games" "Lord-of-the-Test-1.2.1"
     install_git_custom "D00Med" "LegendofMinetest" "" "games/LegendofMinetest"
     install_git_custom "D00Med" "farlands"         "" "games/farlands"
     install_git_custom "maikerumine" "aftermath"   "" "games/aftermath"
@@ -54,13 +60,43 @@ function INSTFUNCTION {
     install_git_custom "azekillDIABLO" "Voxellar"  "" "games/Voxellar"
     install_git_custom "minetest-technic" "technic_game" \
                        "" "games/technic_game" "--recursive"
-
-    ## Nice mods
-    install_git_custom "minetest-mods" "technic"   "" "mods/technic"
-    install_git_custom "minetest-mods" "anvil"     "" "mods/anvil"
-    install_git_custom "minetest-mods" "wielded_light" "" "mods/wielded_light"
-
     
+    
+    ## Nice mods
+    install_git_custom "$mTm" "anvil"             "" "mods/anvil"
+    install_git_custom "$mTm" "craftguide"        "" "mods/craftguide"
+    install_git_custom "$mTm" "crops"             "" "mods/crops"
+    install_git_custom "$mTm" "digilines"         "" "mods/digilines"
+    install_git_custom "$mTm" "digtron"           "" "mods/digtron"
+    install_git_custom "$mTm" "item_drop"         "" "mods/item_drop"
+    install_git_custom "$mTm" "mesecons"          "" "mods/mesecons"
+    install_git_custom "$mTm" "moreblocks"        "" "mods/moreblocks"
+    install_git_custom "$mTm" "moreores"          "" "mods/moreores"
+    install_git_custom "$mTm" "mydoors"           "" "mods/mydoors"
+    install_git_custom "$mTm" "stamina"           "" "mods/stamina"
+    install_git_custom "$mTm" "technic"           "" "mods/technic"
+    install_git_custom "$mTm" "unified_inventory" "" "mods/unified_inventory"
+    install_git_custom "$mTm" "wielded_light"     "" "mods/wielded_light"
+    # install_git_custom "$mTm" ""       "" "mods/"
+ 
+    install_git_custom "jordan4ibanez" "Hoppers" "" "mods/hoppers"
+    install_git_custom "VanessaE" "pipeworks" "$GlUrl" "mods/pipeworks"
+ 
+    install_zip_custom "$NabUrl/TenPlus1/mobs_redo/archive/20181016.zip" \
+                       "mods" "mobs_redo"
+    install_zip_custom "$NabUrl/TenPlus1/mobs_monster/archive/20181016.zip" \
+                       "mods" "mobs_monster"
+    ## https://wiki.minetest.net/Mods/Not_So_Simple_Mobs
+    install_zip_custom "$GhUrl/NPXcoot/nssm/zip/v3.0" \
+                       "mods" "nssm-3.0"
+    install_zip_custom "$GhUrl/stujones11/minetest-3d_armor/zip/version-0.4.13"\
+                       "mods" "minetest-3d_armor-version-0.4.13"
+    install_zip_custom "$GhUrl/rubenwardy/awards/zip/v3.3.0" \
+                       "mods" "awards-3.3.0"
+
+    install_zip_custom "$GlUrl/VanessaE/basic_materials/-/archive/master/basic_materials-master.zip" "mods" "basic_materials-master"
+    
+      
     ## Compile
     if [[ -s "$LAUNCH" ]]; then
         msg "$FgCyan" "Main game engine has already been compiled"

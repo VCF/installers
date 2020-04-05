@@ -306,7 +306,7 @@ Failed to find executable in $GAMEDIR
     countdown 15
 }
 
-function runGame {
+function determineExecutable {
     determineSuffix "$INSTNAME"
     if [[ -n "$INSTREPO" || $sfx == "deb" ]]; then
         ## 'Native' application
@@ -322,6 +322,10 @@ function runGame {
         [[ -s "$EXECUTABLE" ]] || return
         extSfx="${LAUNCH##*.}"
     fi
+}
+
+function runGame {
+    determineExecutable
 
     ## The executable appears to be present
     TRIEDINSTALL="Already installed"
@@ -688,6 +692,8 @@ Unless you've run sudo recently, you will be asked for your password
     ##   https://unix.stackexchange.com/a/159114
     sudo apt install "./$fn"
     cd "$priorPwd" # Return to original directory
+
+    determineExecutable
     CHK=$(which "$EXECUTABLE")
     if [[ -z "$CHK" ]]; then
         msg "$FgRed" "

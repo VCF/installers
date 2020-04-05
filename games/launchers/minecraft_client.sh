@@ -6,6 +6,8 @@ LAUNCH="minecraft-launcher"
 ## Location of the installer:
 INSTDIR="Minecraft"
 INSTNAME="Minecraft-*.deb"
+## JRE 8 needed:
+APTPACKAGES="openjdk-8-jre"
 INSTHELP="To update, visit: https://minecraft.net/download
   Save with versioned filename
 "

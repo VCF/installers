@@ -10,6 +10,7 @@ INSTGIT="https://github.com/minetest/minetest.git"
 APTPACKAGES="
 build-essential
 libirrlicht-dev
+libirrlicht1.8
 cmake
 libbz2-dev
 libpng-dev

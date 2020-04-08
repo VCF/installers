@@ -78,18 +78,15 @@ function INSTFUNCTION {
     install_git_custom "$mTm" "technic"           "" "mods/technic"
     install_git_custom "$mTm" "unified_inventory" "" "mods/unified_inventory"
     install_git_custom "$mTm" "wielded_light"     "" "mods/wielded_light"
+    install_git_custom "$mTm" "stargate"          "" "mods/stargate"
+    install_git_custom "AiTechEye" "bows"         "" "mods/bows"
     # install_git_custom "$mTm" ""       "" "mods/"
  
+    install_git_custom "HeroOfTheWinds" "minetest-caverealms" \
+                       "" "mods/caverealms"
     install_git_custom "jordan4ibanez" "Hoppers" "" "mods/hoppers"
     install_git_custom "VanessaE" "pipeworks" "$GlUrl" "mods/pipeworks"
- 
-    install_zip_custom "$NabUrl/TenPlus1/mobs_redo/archive/20181016.zip" \
-                       "mods" "mobs_redo"
-    install_zip_custom "$NabUrl/TenPlus1/mobs_monster/archive/20181016.zip" \
-                       "mods" "mobs_monster"
-    ## https://wiki.minetest.net/Mods/Not_So_Simple_Mobs
-    install_zip_custom "$GhUrl/NPXcoot/nssm/zip/v3.0" \
-                       "mods" "nssm-3.0"
+
     install_zip_custom "$GhUrl/stujones11/minetest-3d_armor/zip/version-0.4.13"\
                        "mods" "minetest-3d_armor-version-0.4.13"
     install_zip_custom "$GhUrl/rubenwardy/awards/zip/v3.3.0" \
@@ -97,7 +94,26 @@ function INSTFUNCTION {
 
     install_zip_custom "$GlUrl/VanessaE/basic_materials/-/archive/master/basic_materials-master.zip" "mods" "basic_materials-master"
     
-      
+    ########## Mobs ##########
+    install_zip_custom "$NabUrl/TenPlus1/mobs_redo/archive/20181016.zip" \
+                       "mods" "mobs_redo"
+    install_zip_custom "$NabUrl/TenPlus1/ethereal/archive/2020-04-06.zip" \
+                       "mods" "ethereal"
+    install_git_custom "minetest-mobs-mods" "dmobs"  "" "mods/dmobs"
+    ## install_git_custom "h4ml3t" "mobs_sidhe"         "" "mods/mobs_sidhe"
+    install_git_custom "h4ml3t" "mobs_others"        "" "mods/mobs_others"
+    install_git_custom "ElCeejoYT" "paleotest"       "" "mods/paleotest"
+    install_git_custom "NathanSalapat" "arctic_life" "" "mods/arctic_life"
+    install_git_custom "Christian9akaCeej" "prehistoric_life" \
+                       "" "mods/prehistoric_life"
+    install_zip_custom "$NabUrl/TenPlus1/mobs_monster/archive/20181016.zip" \
+                       "mods" "mobs_monster"
+    install_git_custom "Rochambeau" "smobs_monster" "$GlUrl" "mods/smobs_monster"
+    install_git_custom "Rochambeau" "settlements"   "$GlUrl" "mods/settlements"
+    install_git_custom "Rochambeau" "smobs_animals" "$GlUrl" "mods/smobs_animals"
+    ## https://wiki.minetest.net/Mods/Not_So_Simple_Mobs
+    ## install_zip_custom "$GhUrl/NPXcoot/nssm/zip/v3.0" "mods" "nssm-3.0"
+
     ## Compile
     if [[ -s "$LAUNCH" ]]; then
         msg "$FgCyan" "Main game engine has already been compiled"

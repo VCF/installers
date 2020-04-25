@@ -308,6 +308,7 @@ Failed to find executable in $GAMEDIR
 
 function determineExecutable {
     determineSuffix "$INSTNAME"
+    isInstalled="no"
     if [[ -n "$INSTREPO" || $sfx == "deb" ]]; then
         ## 'Native' application
         EXECUTABLE="$(which "$LAUNCH")"
@@ -322,10 +323,12 @@ function determineExecutable {
         [[ -s "$EXECUTABLE" ]] || return
         extSfx="${LAUNCH##*.}"
     fi
+    isInstalled="yes"
 }
 
 function runGame {
     determineExecutable
+    [[ "$isInstalled" == "yes" ]] || return
 
     ## The executable appears to be present
     TRIEDINSTALL="Already installed"

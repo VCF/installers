@@ -5,7 +5,7 @@ PROGDIR="Terraria"
 LAUNCH="start.sh"
 ## Location of the installer:
 INSTDIR="GOG/Terraria"
-INSTNAME='terraria_en_*.sh'
+INSTNAME='terraria_v1_*.sh'
 ## Installation post-processing:
 INSTSAVEDIR="$HOME/.local/share/Terraria"
 INSTICON="Terraria.png"

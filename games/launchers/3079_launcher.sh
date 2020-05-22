@@ -20,6 +20,9 @@ INSTICON="$PROGDIR.png"
 ## Specify any required APT packages:
 APTPACKAGES='openjdk-8-jre'
 
+## Location of the programs save files / config:
+INSTSAVEDIR="$HOME/3079Saves"
+
 ## Notes shown before the installer program runs
 PREINST="
 When asked for the installation path, please specify:

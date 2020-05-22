@@ -57,6 +57,7 @@ those variables are set and the installer is found:
   * If it is a .sh or .appimage it will be run
   * If a zip/bz2/bzip2/xz it will be extracted
   * If a Windows .exe, it will be launched with Wine
+  * If a .jar, it will be run via Java
 
 When the installer finishes, a shortcut will be created on your
 desktop. That shortcut will re-launch the script, which should now
@@ -73,6 +74,10 @@ For Windows programs, the following variables can be set:
   * INSTTRICKS  : winetricks needed by a Windows program
   * WINEPREFIX  : A prefix (folder) for the Wine installation
   * WINEARCH    : The architecture, either win32 or win64
+
+For Java jar files, you can specify:
+
+  * JAVACMD     : An alternative JRE to run the jar file with
 
 Some special-case installer options are:
 
@@ -127,6 +132,7 @@ Additional installation variables
 
 Additional options when the program itself is run:
 
+  * PREINST    : A message shown before running the installer script
   * PRERUN     : A message shown before running program
   * POSTRUN    : A message shown after running
   * NOREDIRECT : Sets STDOUT to stream to terminal rather than \$LOGFILE
@@ -453,12 +459,7 @@ function runWine {
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 
-function runJava {
-    msg "$FgGreen" "  Running Java file \"$EXECUTABLE\""
-    [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
-
-    set_title "Run Java $PROGDIR";
-
+function pickJava {
     JCMD="$JAVACMD"
     if [[ -n "$JCMD" ]]; then
         ## A specific version of Java has been requested
@@ -492,6 +493,15 @@ A request was made to run this program with a specific Java version:
         ## Use the default Java
         JCMD="java"
     fi
+}
+
+function runJava {
+    msg "$FgGreen" "  Running Java file \"$EXECUTABLE\""
+    [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
+
+    set_title "Run Java $PROGDIR";
+
+    pickJava
     
     "$JCMD" -version >> "$LOG"
     echo "#################################################" >> "$LOG"
@@ -499,12 +509,21 @@ A request was made to run this program with a specific Java version:
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
         ## Capture log to file
-        "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH" \
-             "$LAUNCHARGS" &>> "$LOG"
+        if [[ -n "$LAUNCHARGS" ]]; then
+            ## Arguments specified
+            "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH" "$LAUNCHARGS" &>> "$LOG"
+        else
+            "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH" &>> "$LOG"
+        fi
         LogNote=" LogFile:\n  less -S \"$LOG\""
     else
         ## Log to STDOUT
-        "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH" "$LAUNCHARGS"
+        if [[ -n "$LAUNCHARGS" ]]; then
+            ## Arguments specified
+            "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH" "$LAUNCHARGS"
+        else
+            "$JCMD" -Xmx1024M -Xms1024M -jar "$LAUNCH"
+        fi
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
@@ -581,6 +600,9 @@ Launcher not found
     elif [[ $sfx == "deb" ]]; then
         ## Debian package file
         installDebian
+    elif [[ $sfx == "jar" ]]; then
+        ## Java jar file
+        installJava
     else
         ## No idea!
         failedUnknown
@@ -706,6 +728,17 @@ Installation appears to have failed? The expected executable:
 "
         exit
     fi
+}
+
+function installJava {
+    pickJava
+    cd "$GAMEDIR"
+    msg "$FgMagenta" "
+Running Java installer:
+    $installer
+"
+
+    "$JCMD" -Xmx1024M -Xms1024M -jar "$installer"
 }
 
 function stubProgDir {

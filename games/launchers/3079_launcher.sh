@@ -27,6 +27,7 @@ INSTSAVEDIR="$HOME/3079Saves"
 PREINST="
 When asked for the installation path, please specify:
      $GAMEDIR/$PROGDIR
+Uncheck the 'Make Shortcut' option when it finishes.
 "
 
 ## Notes shown before program is executed

@@ -24,6 +24,12 @@ INSTICON="$PROGDIR.png"
 ## Normally a new terminal is opened to launch. Flag to prevent this:
 ## NOTINTERM="No launching terminal"
 
+## Notes shown before the installer program runs
+#PREINST="
+#  Any message you want the installer to display before running, eg
+#  Be sure to uncheck the box 'send details to NSA'
+#"
+
 ## Location of the programs save files / config:
 ## INSTSAVEDIR="$HOME/.config/foobar"
 ## Flag to use if backup should use rsync rather than tar/gzip:
@@ -42,7 +48,7 @@ INSTICON="$PROGDIR.png"
 
 ## Notes shown before program is executed
 #PRERUN="
-#  Any message you want the installer to display before running
+#  Any message you want the program to display before running
 #"
 
 find_and_run_executable "$@"

@@ -41,9 +41,9 @@ DORSYNC="yes"
 function INSTFUNCTION {
     ## Magic not usable unless the control key is set to invoke it:
     PDIR="$GAMEDIR/$PROGDIR"
-    cat "$PDIR/cfg_default.ini" |
-        sed 's/magic_mode_k0=---/magic_mode_k0=LControl/' >
-    "$PDIR/cfg.ini"
+    cat "$PDIR/cfg_default.ini" | \
+        sed 's/magic_mode_k0=---/magic_mode_k0=LControl/' > \
+            "$PDIR/cfg.ini"
 }
 
 ## Notes shown before program is executed

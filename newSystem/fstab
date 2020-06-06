@@ -1,0 +1,12 @@
+## NFS mount rules for /etc/fstab
+
+## Typical Systems:
+
+citadel:/abyss/Media      /abyss/Media      nfs  r,auto
+citadel:/abyss/Common     /abyss/Common     nfs  rw,auto
+citadel:/abyss/Installers /abyss/Installers nfs  r,auto
+
+## Privileged systems with full file system-write capabilites:
+
+citadel:/abyss           /abyss        nfs  rw,auto
+citadel:/abyss/Common    /abyss/Common nfs  rw,auto

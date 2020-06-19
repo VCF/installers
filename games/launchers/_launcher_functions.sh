@@ -211,8 +211,12 @@ scripthelp - Show help for making / editting launchers
         msg "$FgCyan" "  It can auto-install the program"
         if [[ -n "$WINETARGET" ]]; then
             msg "$FgCyan" "    ... using Wine to do so"
-        helpTxt="$helpTxt
+            helpTxt="$helpTxt
   linkwine - Special follow up command to link wine directories"
+        if [[ -n "$INSTTRICKS" ]]; then
+            helpTxt="$helpTxt
+winetricks - Re-run winetricks installation"            
+        fi
         elif [[ -n "$INSTGIT" ]]; then
             msg "$FgCyan" "    ... from a git repository"
          fi
@@ -266,6 +270,19 @@ function find_and_run_executable {
     elif [[ $(hasParam "$1" "linkwine") || $(hasParam "$1" "winelink") ]]; then
         ## Link the wine directory to the Progams directory
         linkWine
+        return
+    elif [[ $(hasParam "$1" "winetricks") ]]; then
+        ## Re-install winetricks
+        if [[ -n "$INSTTRICKS" ]]; then
+            Pwd="$(pwd)"
+            wineDriveC
+            wineTricks "$INSTTRICKS"
+            cd "$Pwd" # Return to prior directory
+        else
+            msg "$FgYellow" "
+You requested re-installation of wine tricks, but none seem to be defined?
+"
+        fi
         return
     elif [[ $(hasParam "$1" "custfunc") ]]; then
         ## Run the custom installation function again
@@ -803,27 +820,31 @@ Establishing new Wine Prefix at:
     msg "$FgGreen" "Wine Prefix: $winePfx ($wineArch)"
 }
 
-function installWine {
-    Pwd="$(pwd)"
-    wineDriveC
-
-    if [[ -n "$INSTTRICKS" ]]; then
-        ## Request to make some winetricks available
-        msg "$FgCyan" "
+function wineTricks {
+    tricks="$1"
+    [[ -z "$tricks" ]] && return
+    
+    msg "$FgCyan" "
 Installing requested winetricks:
-  $INSTTRICKS
+  $tricks
 "
-        wt=$(which winetricks)
-        if [[ -z "$wt" ]]; then
-            echo "$FgRed" "
+    wt=$(which winetricks)
+    if [[ -z "$wt" ]]; then
+        msg "$FgRed" "
 The wine helper application `winetricks` does not appear to be installed
   Please install 'winetricks' from your repository
 "
-            exit
-        fi
-        WINEARCH="$wineArch" WINEPREFIX="$winePfx" winetricks $INSTTRICKS
-        msg "$FgBlue" "  Done."
+        exit
     fi
+    WINEARCH="$wineArch" WINEPREFIX="$winePfx" winetricks $tricks
+    msg "$FgBlue" "  Done."
+}
+
+function installWine {
+    Pwd="$(pwd)"
+    wineDriveC
+    ## Install requested Wine Tricks, if any:
+    wineTricks "$INSTTRICKS"
 
     ## Wine wants files to be 'on' drive_c (chroot/jailed?). For GOG,
     ## the installer is often a small exe plus one or more .bin

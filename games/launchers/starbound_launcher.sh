@@ -8,8 +8,7 @@ LAUNCH="starbound"
 INSTDIR="Humble Indie Bundle/Starbound"
 INSTNAME='starbound_*_linux.zip'
 ## Installation post-processing:
-##INSTRENAME='starbound_*_linux/'$PROGDIR
-UNPACKDIR="$PROGDIR" # Zip archive does not have a containing folder
+INSTRENAME='starbound_*_linux/'$PROGDIR
 INSTSAVEDIR="$HOME/Programs/Starbound/storage"
 INSTICON="Starbound2.png"
 

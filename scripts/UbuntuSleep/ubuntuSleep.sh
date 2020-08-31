@@ -62,6 +62,34 @@ if [[ -n "$ISSYSTEMD" ]]; then
     ## https://askubuntu.com/a/780990
     echo "Sleep by systemctl"
     systemctl suspend -i
+
+    ## Sigh. Sometimes something weird happens and systemd gets locked
+    ## up trying to sleep. The system will not suspend, and attempts
+    ## to try again will report:
+    
+    ## Failed to suspend system via logind: There's already a shutdown
+    ## or sleep operation in progress
+
+    ## Poettering blames something other than systemd and WONTFIX:
+    ##   https://github.com/systemd/systemd/issues/1640
+
+    ## Fortunately we can check, and fix, if this happens:
+    ##   https://unix.stackexchange.com/a/579531
+
+    sssPID=$(systemctl list-jobs | grep systemd-suspend.service | grep '^([0-9]+)')
+    if [[ -n "$sssPID" ]]; then
+        echo "
+
+It looks like systemctl may have failed to suspend the system?  If you
+attempted to sleep and the system did not, and now won't sleep at all,
+try:
+
+  systemctl cancel $sssPID
+
+... and run this script again
+
+"
+    fi
     
 elif [[ -n "$HASPMI" ]]; then
     ## https://askubuntu.com/a/1795

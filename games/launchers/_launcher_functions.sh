@@ -671,8 +671,9 @@ Installer finished, attempting launch...
 function findInstaller {
     ## A list of possible locations should have been provided in the
     ## INSTDIRS variable in the conf file
-    installer="$(firstFileLocation "$INSTDIRS" $INSTNAME)"
-    
+    safeAsterisk=$(echo "$INSTNAME" | sed 's/\*/\\\*/g')
+    installer="$(firstFileLocation "$INSTDIRS" "$safeAsterisk")"
+
     if [[ -z "$installer" ]]; then
         ## Installer not found
         msg "$FgRed" "
@@ -1565,15 +1566,18 @@ function firstFileLocation {
     ## $1 - a multiline string of possible directory locations
     ## $2 - a file path to add to each of the above directories
 
+    ## We may have needed to escape wildcards to call the function
+    ## properly. Unescape them here:
+    liveAsterisk=$(echo "$2" | sed 's/\\\*/\*/g')
     ## If the file path request has a wildcard (*) then we can't quote
     ## it in the below calls. Otherwise, we should quote to properly
     ## preserve spaces in the path:
-    hasAsterisk="$(echo "$2" | grep '\*')"
+    hasAsterisk="$(echo "$liveAsterisk" | grep '\*')"
 
     if [[ -z "$hasAsterisk" ]]; then
-        chk="$(ls -1t "$2" 2>/dev/null | head -n1)"
+        chk="$(ls -1t "$liveAsterisk" 2>/dev/null | head -n1)"
     else
-        chk="$(ls -1t $2 2>/dev/null | head -n1)"
+        chk="$(ls -1t $liveAsterisk 2>/dev/null | grep -v '_launcher' | head -n1)"
     fi
     if [[ -n "$chk" ]]; then
         ## The file path is either available relative to ./, or it's
@@ -1589,9 +1593,9 @@ function firstFileLocation {
         if [[ -n "$path" ]]; then
             ## path is non-blank
             if [[ -z "$hasAsterisk" ]]; then
-               chk="$(ls -1t "$path"/"$2" 2>/dev/null | head -n1)"
+                chk="$(ls -1t "$path"/"$liveAsterisk" 2>/dev/null | head -n1)"
             else
-                chk="$(ls -1t "$path"/$2 2>/dev/null | head -n1)"
+                chk="$(ls -1t "$path"/$liveAsterisk 2>/dev/null | head -n1)"
             fi
             if [[ -f "$chk" ]]; then
                 ## File was found

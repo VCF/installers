@@ -212,7 +212,8 @@ scripthelp - Show help for making / editting launchers
         if [[ -n "$WINETARGET" ]]; then
             msg "$FgCyan" "    ... using Wine to do so"
             helpTxt="$helpTxt
-  linkwine - Special follow up command to link wine directories"
+  linkwine - Special follow up command to link wine directories
+   winecfg - Launch wine configuration in appropriate Wine prefix"
         if [[ -n "$INSTTRICKS" ]]; then
             helpTxt="$helpTxt
 winetricks - Re-run winetricks installation"            
@@ -270,6 +271,10 @@ function find_and_run_executable {
     elif [[ $(hasParam "$1" "linkwine") || $(hasParam "$1" "winelink") ]]; then
         ## Link the wine directory to the Progams directory
         linkWine
+        return
+    elif [[ $(hasParam "$1" "winecfg") || $(hasParam "$1" "cfgwien") ]]; then
+        ## Run wine configuration
+        runWineCfg
         return
     elif [[ $(hasParam "$1" "winetricks") ]]; then
         ## Re-install winetricks
@@ -474,6 +479,14 @@ function runWine {
         fi
     fi
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
+}
+
+function runWineCfg {
+    wineDriveC
+    msg "$FgGreen" "  Configuring Wine for $PROGDIR
+    in $(pwd)"
+    WINEARCH="$wineArch" WINEPREFIX="$winePfx" winecfg
+    msg "$FgCyan" "    Configuration finished\n"
 }
 
 function pickJava {

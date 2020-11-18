@@ -2,7 +2,7 @@
 
 ## Location of the executable:
 PROGDIR="Red Faction"
-LAUNCH="RF.exe"
+LAUNCH="RedFaction.exe"
 
 ## Location of the installer on your file system:
 INSTDIR="GOG/$PROGDIR"

@@ -23,7 +23,10 @@ APTPACKAGES="winetricks"
 INSTTRICKS="d3dx9 cc580 vcrun2005 directx9 l3codecx quartz"
 ## Installation post-processing:
 WINETARGET="GOG Games/Fallout 3"
-## INSTSAVEDIR="drive_c/GOG Games/Fallout/DATA/SAVEGAME"
+
+## Location of the programs save files / config:
+INSTSAVEDIR="$HOME/Documents/My Games/Fallout3"
+## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
 
 ## Notes:
@@ -31,8 +34,10 @@ PRERUN="
 WineHQ Platinum
   https://appdb.winehq.org/objectManager.php?sClass=version&iId=37374
 
+  Works fine on high-spec computer.
+
   Significant problems on low-spec computer - crashes during loading screen
-  on start of new game.
+  on start of new game. Integrated video issues? Drivers?
 "
 
 

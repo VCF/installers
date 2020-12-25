@@ -62,27 +62,35 @@ Failed to find properly named Vulkan DLL. It should be at:
 
 ## Notes shown before program is executed
 PRERUN="
-WineHQ Gold, but Bronze in my hands:
+WineHQ Gold
   https://appdb.winehq.org/objectManager.php?sClass=version&iId=34056
 
 Problem:
   I can't for the life of me get mouse and keyboard to correctly work.
-  Most - BUT NOT ALL - controls can be remapped.
+  This behavior is seen on two systems (both Linux Mint 19.3)
   Mouse:
     Right mouse button ends up just being left mouse button
-    Multiple options are mapped to Right Mouse. Most can be remapped
-      Construction Research Station REQUIRES RightMouse to exit interface
-        On first use you will be stuck here and have to force quit game,
-        losing progress. THIS IS GAME BREAKING. You can not progress story
-        line because of this.
   Keyboard:
-    Modifier keys (like 'Left Ctrl') are not recognized.
-    In construction mode, this prevents deleting structures (Left Ctrl)
+    'Sided' modifier keys (like 'Left Ctrl') are not recognized. Instead
+    they are recognized as the 'unsided' version (eg 'Ctrl')
+
+If you have this problem, and do not remap your controls, you will not be
+able to progress the game. In particular, some dialogs do not recognize
+'Esc' to exit, and require the right-mouse button to be remapped, or you
+will be stuck in the dialog forever (base research, for example).
+
+To fix this, open Options and remap controls. Find every unrecognized key
+or button, and map it to something else.
 
 Also, The Internet agrees that the GOG version has significant limitations
 when launched without GOG Galaxy - You will be known only as 'Explorer' and
 will not be able to participate in the community features. Multiplayer may
 also be messed up.
+
+Load times are REALLY long. Like 5 minutes long. Fortunately, you can work
+in another application while loading occurs (eg a web browser). In order
+to Alt-tab to other applications, you may need to change screen from
+'Fullscreen' to 'Borderless Window'.
 "
 
 find_and_run_executable "$@"

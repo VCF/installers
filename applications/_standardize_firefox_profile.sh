@@ -7,6 +7,7 @@ function standardizeProfile {
     ## eg $HOME/.mozilla/firefox
     ## Parameterized so it can be used with Tor, too
     profDir="$1"
+    noStnd="$2"
     xpiDir="$my_dir/WebExtensionXPIs"
     stndShort="stndProfile"
     stndProf="$profDir/$stndShort"
@@ -21,7 +22,13 @@ relaunch this script with:
         return
     fi
 
-    if [[ -d "$stndProf" ]]; then
+    if [[ -n "$noStnd" ]]; then
+        ## We are providing the profile directory directly
+        ## This is needed for Tor, which refuses to allow the profile
+        ## directory to be a symlink
+        defProf="$noStnd"
+        stndProf="$noStnd"
+    elif [[ -d "$stndProf" ]]; then
         ## We have already made a normalized symlink
         ## In order to define INSTSAVEDIR we still need its target
         defProf="$profDir/$(readlink "$stndProf")"

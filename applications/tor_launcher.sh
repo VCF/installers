@@ -39,6 +39,6 @@ RSYNCDIR="$profDir/profile.default"
 ## We need to do a few tweaks to the profile directory, mainly copying
 ## in XPI files and normalizing its location. We can't do that until
 ## Firefox runs at least once, so test for that in the body here:
-standardizeProfile "$profDir"
+standardizeProfile "$profDir" "$RSYNCDIR"
 
 find_and_run_executable "$@"

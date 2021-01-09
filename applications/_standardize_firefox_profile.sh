@@ -52,7 +52,12 @@ I failed to find the default profile in:
     fi
     
     ## We will also set the "save diretory" to the profile
-    INSTSAVEDIR="$defProf"
+    if [[ -n "$noStnd" ]]; then
+        ## ... unless we're using a manually-defined profile location
+        INSTSAVEDIR='NONE'
+    else
+        INSTSAVEDIR="$defProf"
+    fi
     saveLocation
 
     prefFile="$stndProf/user.js"

@@ -33,8 +33,8 @@ my_dir="$(dirname "$0")"
 ## Tor does NOT like having the profile directory relocated to another
 ## spot and then symlinked. So instead we will backup the profile
 ## folder "in place" using rsync:
-profDir="$GAMEDIR/$PROGDIR/Browser/TorBrowser/Data/Browser/profile.default"
-RSYNCDIR="$profDir"
+profDir="$GAMEDIR/$PROGDIR/Browser/TorBrowser/Data/Browser"
+RSYNCDIR="$profDir/profile.default"
 
 ## We need to do a few tweaks to the profile directory, mainly copying
 ## in XPI files and normalizing its location. We can't do that until

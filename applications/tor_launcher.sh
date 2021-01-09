@@ -27,11 +27,18 @@ https://www.torproject.org/projects/torbrowser.html.en
 "
 
 my_dir="$(dirname "$0")"
+. "$my_dir/_standardize_firefox_profile.sh"
 . "$my_dir/_launcher_functions.sh"
 
 ## Tor does NOT like having the profile directory relocated to another
 ## spot and then symlinked. So instead we will backup the profile
 ## folder "in place" using rsync:
-RSYNCDIR="$GAMEDIR/$PROGDIR/Browser/TorBrowser/Data/Browser/profile.default"
+profDir="$GAMEDIR/$PROGDIR/Browser/TorBrowser/Data/Browser/profile.default"
+RSYNCDIR="$profDir"
+
+## We need to do a few tweaks to the profile directory, mainly copying
+## in XPI files and normalizing its location. We can't do that until
+## Firefox runs at least once, so test for that in the body here:
+standardizeProfile "$profDir"
 
 find_and_run_executable "$@"

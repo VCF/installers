@@ -4,8 +4,6 @@
 
 ## Location of the executable:
 PROGDIR="Fallout 3"
-LAUNCH="Fallout3.exe"
-LAUNCH="FalloutLauncher.exe"
 
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
@@ -26,6 +24,7 @@ WINETARGET="GOG Games/Fallout 3"
 
 ## Location of the programs save files / config:
 INSTSAVEDIR="$HOME/Documents/My Games/Fallout3"
+DORSYNC="yes"
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
 
@@ -43,6 +42,22 @@ WineHQ Platinum
 
 my_dir="$(dirname "$0")"
 . "$my_dir/_launcher_functions.sh"
+
+## Run the configuration script the first time, then use the
+## direct launcher:
+confSet="$GAMEDIR/$PROGDIR/vcfConfRun.txt"
+
+if [[ -s "$confSet" ]]; then
+    LAUNCH="Fallout3.exe"
+    msg "$FgBlue" "
+Launching primary game executable, $LAUNCH
+If you wish to run the setup/configuration launcher, delete this file:
+  rm '$confSet'
+"
+else
+    LAUNCH="FalloutLauncher.exe"
+    echo "Configuration set on $(date)" > "$confSet"
+fi
 
 find_and_run_executable "$@"
 

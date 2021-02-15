@@ -5,7 +5,9 @@ PROGDIR="Minetest"
 LAUNCH="bin/minetest"
 
 ## Location of the installer:
-INSTGIT="https://github.com/minetest/minetest.git"
+INSTDIR="OpenSource/$PROGDIR"
+INSTNAME='minetest-5.3.0.tar.gz'
+
 ## Required modules
 APTPACKAGES="
 build-essential
@@ -45,6 +47,7 @@ function INSTFUNCTION {
 
     GhUrl="https://codeload.github.com"
     GlUrl="https://gitlab.com"
+    mtcUrl="https://content.minetest.net/uploads"
     NabUrl="https://notabug.org"
     mTm="minetest-mods"
 
@@ -85,8 +88,10 @@ function INSTFUNCTION {
     install_git_custom "HeroOfTheWinds" "minetest-caverealms" \
                        "" "mods/caverealms"
     install_git_custom "jordan4ibanez" "Hoppers" "" "mods/hoppers"
-    install_git_custom "VanessaE" "pipeworks" "$GlUrl" "mods/pipeworks"
-
+    ## install_git_custom "VanessaE" "pipeworks" "$GlUrl" "mods/pipeworks"
+    
+    install_zip_custom "$mtcUrl/CmnzkAG1Y1.zip" "mods/pipeworks" "models"
+    
     install_zip_custom "$GhUrl/stujones11/minetest-3d_armor/zip/version-0.4.13"\
                        "mods" "minetest-3d_armor-version-0.4.13"
     install_zip_custom "$GhUrl/rubenwardy/awards/zip/v3.3.0" \

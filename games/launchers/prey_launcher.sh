@@ -18,7 +18,7 @@ my_dir="$(dirname "$0")"
 
 ###### configuration:
 ## Should we use 32- or 64-bit environment?
-wineBits="32"
+wineBits="64"
 ## Define the prefix (folder) for the Wine installation:
 WINEPREFIX="$HOME/Wine$wineBits"
 ## Set the architecture being used for Wine:

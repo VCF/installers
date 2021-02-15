@@ -55,8 +55,9 @@ INSTICON="$PROGDIR.png"
 #}
 
 ## Notes shown before program is executed
-#PRERUN="
-#If the program asks to choose a flavor, please select 'Tepid Mango'
-#"
+PRERUN="
+Wine Platinum
+  https://appdb.winehq.org/objectManager.php?sClass=version&iId=8097
+"
 
 find_and_run_executable "$@"

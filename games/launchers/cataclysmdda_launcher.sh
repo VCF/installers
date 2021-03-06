@@ -5,7 +5,7 @@ PROGDIR="Cataclysm DDA"
 LAUNCH="cataclysm-launcher"
 ## Location of the installer:
 INSTDIR="OpenSource/$PROGDIR"
-INSTNAME='cataclysmdda-*-Linux-Tiles.tar.gz'
+INSTNAME='cataclysmdda-*-Linux_x64-Tiles-*.tar.gz'
 ## Installation post-processing:
 INSTICON="$PROGDIR.jpg"
 INSTRENAME='cataclysmdda-*/'"$PROGDIR"

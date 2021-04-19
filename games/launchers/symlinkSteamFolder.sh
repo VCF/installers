@@ -81,7 +81,7 @@ Creating symlink in Steam folder
 
 ln -s "$DEST" "$SRC"
 
-if [[ -l "$SRC" ]]; then
+if [[ -L "$SRC" ]]; then
     echo "   Link created."
     CHK="$(readlink -f "$SRC")"
     if [[ "$CHK" == "$DEST" ]]; then

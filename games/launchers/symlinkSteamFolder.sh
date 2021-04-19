@@ -50,7 +50,7 @@ I could not find this steam directory:
 fi
 
 FNAME="$(basename "$SRC")"
-DEST="$TARGIDR/$FNAME"
+DEST="$TARGDIR/$FNAME"
 echo "Moving Steam folder
 From: $SRC
   To: $DEST

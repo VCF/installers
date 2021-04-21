@@ -21,12 +21,16 @@ WINEPREFIX="$HOME/Wine$wineBits"
 WINEARCH="win$wineBits"
 ## The location of the installed program in drive_c:
 WINETARGET="GOG Games/Total Annihilation - Commander Pack"
+## Any winetricks that might be needed:
+INSTTRICKS="directplay"
 
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
 
 ## Location of the programs save files / config:
 INSTSAVEDIR="$GAMEDIR/$PROGDIR/SAVEGAME"
+## Flag to use if backup should use rsync rather than tar/gzip:
+DORSYNC="yes"
 
 ## Notes shown before program is executed
 PRERUN="

@@ -4,7 +4,7 @@ PROGDIR="Torchlight2"
 LAUNCH="Torchlight2.bin.x86_64"
 
 ## Location of the installer:
-INSTDIR="Humble Indie Bundle/$PROGDIR"
+INSTDIR="Humble Indie Bundle/Torchlight"
 INSTNAME='Torchlight2-linux-*.sh'
 
 my_dir="$(dirname "$0")"

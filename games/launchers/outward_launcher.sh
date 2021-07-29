@@ -3,10 +3,6 @@
 ## Location of the executable:
 PROGDIR="Outward"
 LAUNCH="Outward.exe"
-## Arguments to pass to the executable when running:
-## LAUNCHARGS="-nogui -res=640x320"
-## Subdirectory in the program folder to change to before running:
-## PROGSUBDIR="bin"
 
 ## Location of the installer on your file system:
 INSTDIR="GOG/$PROGDIR"
@@ -25,38 +21,18 @@ WINEPREFIX="$HOME/Wine$wineBits"
 WINEARCH="win$wineBits"
 ## The location of the installed program in drive_c:
 WINETARGET="GOG Games/$PROGDIR"
-## Any winetricks that might be needed:
-## INSTTRICKS="d3dx9_43 wmp9 wmp10"
-## Switches passed to Wine when running application
-## WINEARGS="-windowed"
 
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
 
-## Specify any required APT packages:
-## APTPACKAGES='libsdl2-mixer-2.0-0'
-## Normally a new terminal is opened to launch. Flag to prevent this:
-## NOTINTERM="No launching terminal"
-
 ## Location of the programs save files / config:
 INSTSAVEDIR="$GAMEDIR/$PROGDIR/SaveGames"
-## Flag to use if backup should use rsync rather than tar/gzip:
-## DORSYNC="yes"
-## Flag that prevents backups if set, and shows the provided message:
-## NOAUTOBACK="Backups take too long to run"
-
-## Custom function to run after installation:
-#function INSTFUNCTION {
-#  echo "For example, properly setting executable bits"
-#}
-## Custom function to run each time just before running the program:
-#function RUNFUNCTION {
-#  echo "For example, configuring the system in some way"
-#}
 
 ## Notes shown before program is executed
-#PRERUN="
-#If the program asks to choose a flavor, please select 'Tepid Mango'
-#"
+PRERUN="
+Seems to run fine, but any 'excursion' out of the program (eg alt-tab)
+will cause the program to crash. Also crashes if the screen saver
+activates (eg if playing by game pad and screen lock timeout occurs)
+"
 
 find_and_run_executable "$@"

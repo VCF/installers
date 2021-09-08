@@ -683,6 +683,23 @@ $INSTDIRS
     fi
 }
 
+function addDLC {
+    DLCFILE="$1"
+    OLDINST="$INSTNAME"
+    INSTNAME="$DLCFILE"
+    installer=""
+    findInstaller
+    if [[ -z "$installer" ]]; then
+        msg "$FgYellow" "  DLC absent: $INSTNAME"
+    else
+        msg "$FgBlue" "  Installing DLC:
+    $installer
+"
+        installShell
+    fi
+    INSTNAME="$OLDINST"
+}
+
 function determineSuffix {
     ##  Lower case in bash: https://stackoverflow.com/a/2264537
     ## Parameter Expansion: https://stackoverflow.com/a/965069

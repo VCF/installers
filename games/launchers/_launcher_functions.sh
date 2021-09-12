@@ -963,7 +963,7 @@ Cloning git archive:
   $INSTGIT
 "
     cd "$GAMEDIR"
-    git clone "$INSTGIT"
+    git clone "$INSTGIT" "$PROGDIR"
     finishInstall
 }
 

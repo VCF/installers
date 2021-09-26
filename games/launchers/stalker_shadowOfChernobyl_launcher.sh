@@ -25,7 +25,9 @@ WINETARGET="GOG Games/S.T.A.L.K.E.R. Shadow of Chernobyl"
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
 ## Location of the programs save files / config:
-INSTSAVEDIR="$HOME/Documents/Stalker-SHOC"
+INSTSAVEDIR="$HOME/Documents/Stalker-SHOC/savedgames"
+## Flag to use if backup should use rsync rather than tar/gzip:
+DORSYNC="yes"
 
 ## Notes shown before program is executed
 PRERUN="

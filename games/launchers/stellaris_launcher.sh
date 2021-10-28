@@ -18,4 +18,10 @@ INSTICON="$PROGDIR.png"
 ## Location of the programs save files / config:
 INSTSAVEDIR="$HOME/.local/share/Paradox Interactive/Stellaris"
 
+## Custom function to run after installation:
+function INSTFUNCTION {
+    echo "Installing DLCs"
+    addDLC 'stellaris_horizon_signal_*.sh'
+}
+
 find_and_run_executable "$@"

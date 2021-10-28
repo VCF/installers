@@ -18,4 +18,11 @@ INSTICON="$PROGDIR.png"
 ## Location of the programs save files / config:
 INSTSAVEDIR="$GAMEDIR/$PROGDIR/game/save"
 
+## Custom function to run after installation:
+function INSTFUNCTION {
+    echo "Installing DLCs"
+    addDLC 'dead_cells_rise_of_the_giant_*.sh'
+}
+
+
 find_and_run_executable "$@"

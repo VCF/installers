@@ -35,6 +35,7 @@ When this libarary is called by a specific program's installer script,
 it will look for the following parameters:
 
   * WINETARGET  : Subfolder generated on your Wine C: drive by installation
+  * DOSBOX      : DosBox command line arguments
   * PROGDIR     : The first-level subdirectory of \$GAMEDIR
   * LAUNCH      : The name of the executable (can include additional subdirs)
   * LAUNCHARGS  : Optional arguments to pass to the executable
@@ -44,6 +45,7 @@ If the file specified by \$LAUNCH is found:
 
   * If it is executable, it will be executed.
     * ... by Wine, if a Windows executable
+    * ... by native DosBox, if specified by \$DOSBOX
   * If it is a Java .jar file, it will be launched with java
 
 In all cases STDOUT will be captured in \$LOGFILE (named in your
@@ -372,12 +374,15 @@ function runGame {
     ## If an additional subdirectory is specified, move there
     [[ -z "$PROGSUBDIR" ]] || cd "$PROGSUBDIR"
 
+
     echo "## Launcher log file" > "$LOG"
     echo "##   $(date)" >> "$LOG"
     echo "##  Location: $(pwd)" >> "$LOG"
     echo "##   Running: $EXECUTABLE" >> "$LOG"
 
-    if [[ "$extSfx" == 'exe' ]]; then
+    if [[ -n "$DOSBOX" ]]; then
+        runDosBox
+    elif [[ "$extSfx" == 'exe' ]]; then
         wineDriveC
         echo "##          : With $(wine --version)" >> "$LOG"
         echo "##          : Architecture $wineArch Prefix $winePfx" >> "$LOG"
@@ -439,6 +444,28 @@ function runExecutable {
             "$doLaunch"
         fi
     fi
+    msg "$FgCyan" "  Launcher finished.$LogNote\n"
+}
+
+function runDosBox {
+    chk=$(which "dosbox")
+    if [[ -z "$chk" ]]; then
+        msg "$FgRed" "
+This application relies on DosBox, which appears to be absent on your system.
+Please install with:
+  sudo apt install dosbox
+"
+        return
+    fi
+    echo "##          : Using DosBox" >> "$LOG"
+    echo "##          :   $DOSBOX" >> "$LOG"
+    echo "#################################################" >> "$LOG"
+    LogNote=" LogFile:\n  less -S \"$LOG\""
+    msg "$FgGreen" "  DosBox launch of $LAUNCH
+    in $(pwd)"
+
+    set_title "DosBox $PROGDIR";
+    eval "dosbox $DOSBOX" >> "$LOG"
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 

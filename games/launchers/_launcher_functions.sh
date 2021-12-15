@@ -267,7 +267,7 @@ function find_and_run_executable {
     elif [[ $(hasParam "$1" "backup") ]]; then
         ## Run a backup
         backupGameFiles; return
-    elif [[ $(hasParam "$1" "shortcut") || $(hasParam "$1" "desktop") ]]; then
+    elif [[ $(hasParam "$1" "shortcut") || $(hasParam "$1" "desktop") || $(hasParam "$1" "icon") ]]; then
         ## Make the shortcut
         desktopIcon; return
     elif [[ $(hasParam "$1" "linkwine") || $(hasParam "$1" "winelink") ]]; then

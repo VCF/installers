@@ -6,7 +6,7 @@ LAUNCH="CraftWorld.exe"
 
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
-INSTNAME='setup_craft_the_world_*.exe'
+INSTNAME='setup_craft_the_world_1*.exe'
 
 my_dir="$(dirname "$0")"
 . "$my_dir/_launcher_functions.sh"
@@ -26,5 +26,10 @@ PRERUN="
 WineHQ Platinum
   https://appdb.winehq.org/objectManager.php?sClass=application&iId=16032
 "
+
+function INSTFUNCTION {
+    echo "Installing DLCs"
+    addDLC 'setup_craft_the_world_-_abandoned_mines_*.exe'
+}
 
 find_and_run_executable "$@"

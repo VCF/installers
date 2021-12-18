@@ -26,14 +26,14 @@ WINETARGET="GOG Games/FAR Lone Sails"
 INSTICON="$PROGDIR.png"
 
 ## Location of the programs save files / config:
-## INSTSAVEDIR="$HOME/.config/foobar"
-## Flag to use if backup should use rsync rather than tar/gzip:
-## DORSYNC="yes"
+INSTSAVEDIR="drive_c/users/tilfordc/AppData/LocalLow/Okomotive/FarLoneSails"
+
 
 ## Notes shown before program is executed
 PRERUN="
+https://appdb.winehq.org/objectManager.php?sClass=version&iId=36986
 Wine 64-bit
-Landing page was blank on low-spec integrated graphics system
+  Landing page was blank on low-spec integrated graphics system
 "
 
 find_and_run_executable "$@"

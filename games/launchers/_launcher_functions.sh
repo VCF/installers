@@ -39,6 +39,7 @@ it will look for the following parameters:
   * PROGDIR     : The first-level subdirectory of \$GAMEDIR
   * LAUNCH      : The name of the executable (can include additional subdirs)
   * LAUNCHARGS  : Optional arguments to pass to the executable
+  * LAUNCHENV   : Optional environment settings to preceed executable
   * PROGSUBDIR  : Optional subdirectory. Used to set initial path of run
 
 If the file specified by \$LAUNCH is found:
@@ -426,24 +427,27 @@ function runExecutable {
     determineSuffix "$INSTNAME"
     [[ -n "$INSTREPO" || $sfx == "deb" ]] && doLaunch="$EXECUTABLE"
     
-    set_title "Run $PROGDIR";
+    if [[ -n "$LAUNCHENV" ]]; then
+        ## Prefix environment calls to the command
+        msg "$FgBlue" "    Environment: $LAUNCHENV"
+        doLaunch="$LAUNCHENV $doLaunch"
+    fi
+    if [[ -n "$LAUNCHARGS" ]]; then
+        ## Add arguments after the command
+        msg "$FgBlue" "      Arguments: $LAUNCHARGS"
+        doLaunch="$doLaunch $LAUNCHARGS"
+    fi
     LogNote=""
     if [[ -z "$NOREDIRECT" ]]; then
-        ## Capture log to file
-        if [[ -n "$LAUNCHARGS" ]]; then
-            "$doLaunch" "$LAUNCHARGS" &>> "$LOG"
-        else
-            "$doLaunch" &>> "$LOG"
-        fi
+        ## Redirect both STDOUT and STDERR to logfile
+        doLaunch="$doLaunch &>> '$LOG'"
         LogNote=" LogFile:\n  less -S \"$LOG\""
-    else
-        ## Log to STDOUT
-        if [[ -n "$LAUNCHARGS" ]]; then
-            "$doLaunch" "$LAUNCHARGS"
-        else
-            "$doLaunch"
-        fi
+        msg "$FgBlue" "       Log File: $LOG"
     fi
+    
+    set_title "Run $PROGDIR";
+    eval $doLaunch
+    
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 

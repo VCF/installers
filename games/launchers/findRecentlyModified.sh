@@ -13,5 +13,7 @@ find "$srcDir" -mtime -1 |\
     egrep -v "(${isWine}waterfox|gimp|cache|Browser|confFiles|emacs)" |\
     egrep -v '(Desktop|Programs|icons|GameFiles|zeitgeist|generalUtilities)' |\
     egrep -v '(installers|pulse|Downloads|Trash|QMapShack|dolphin)' |\
+    egrep -v '\/(mime)\/' |\
+    egrep -v '\/(wine-extension|gvfs-)' |\
     egrep -v '(RecentDocuments|kactivitymanagerd|libreoffice)' |\
     less -S

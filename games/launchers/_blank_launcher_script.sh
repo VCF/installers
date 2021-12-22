@@ -40,6 +40,7 @@ INSTICON="$PROGDIR.png"
 ## Custom function to run after installation:
 #function INSTFUNCTION {
 #  echo "For example, properly setting executable bits"
+#  addDLC 'foobar_pro_DLC_pack_*.sh'
 #}
 ## Custom function to run each time just before running the program:
 #function RUNFUNCTION {

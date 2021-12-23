@@ -26,7 +26,10 @@ WINETARGET="GOG Games/StellarTactics"
 
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
-
+## Location of the programs save files / config:
+INSTSAVEDIR="$GAMEDIR/$PROGDIR/Save"
+## Flag to use if backup should use rsync rather than tar/gzip:
+DORSYNC="yes"
 
 ## Custom function to run after installation:
 function INSTFUNCTION {

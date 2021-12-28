@@ -726,7 +726,7 @@ function addDLC {
         msg "$FgBlue" "  Installing DLC:
     $installer
 "
-        installShell
+        installGame
     fi
     INSTNAME="$OLDINST"
 }
@@ -1565,11 +1565,16 @@ function customInstallFunction {
     ## esoteric steps are needed. Check to see if a custom
     ## installation function has been defined
 
+    ## Avoid recursion (can happen with addDLC()
+    [[ -n "$inCustFunction" ]] && return
+    inCustFunction=1
+    
     ## Check if function is set: https://stackoverflow.com/a/85903
     funcSet=$(type -t INSTFUNCTION)
     [[ "$funcSet" == "function" ]] || return
 
     INSTFUNCTION
+    unset inCustFunction
 }
 
 function customRunFunction {

@@ -24,6 +24,10 @@ WINEARCH="win$wineBits"
 ## The location of the installed program in drive_c:
 WINETARGET="GOG Games/$PROGDIR"
 
+## Specify any required APT packages:
+APTPACKAGES='
+dosbox
+'
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
 

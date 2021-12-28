@@ -26,7 +26,7 @@ On the PN-40 at least it appears to be a problem with video
 drivers? Might be resolvable.
 
 "
-exit
+# exit
 
 ###### configuration:
 ## Should we use 32- or 64-bit environment?
@@ -46,7 +46,7 @@ LAUNCHARGS="/SP- /NOCANCEL /SUPPRESSMSGBOXES"
 INSTICON="Wolfenstein.png"
 
 ## Specify any required APT packages:
-## APTPACKAGES='libsdl2-mixer-2.0-0'
+APTPACKAGES='libvulkan-dev:i386'
 ## Normally a new terminal is opened to launch. Flag to prevent this:
 ## NOTINTERM="No launching terminal"
 

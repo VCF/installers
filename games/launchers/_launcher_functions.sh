@@ -132,6 +132,8 @@ Additional installation variables
   * NOTINTERM   : Do not run program in terminal
   * RUNFUNCTION : bash function to run before launching program
                   Useful when program needs coddling before launch
+  * ENDFUNCTION : bash function to run after launching program
+                  Useful to clean up any issues caused by running
 
 Additional options when the program itself is run:
 
@@ -402,7 +404,9 @@ function runGame {
     chmod u+x \"$EXECUTABLE\""
         fi
     fi
-    
+
+    customEndFunction
+
     ## Backup files to server, if save path is known and NoAutoBackup
     ## flag is not set
     if [[ -z "$NOAUTOBACK" ]]; then
@@ -1582,6 +1586,13 @@ function customRunFunction {
     [[ "$funcSet" == "function" ]] || return
 
     RUNFUNCTION
+}
+
+function customEndFunction {
+    funcSet=$(type -t ENDFUNCTION)
+    [[ "$funcSet" == "function" ]] || return
+
+    ENDFUNCTION
 }
 
 function backupGameFiles {

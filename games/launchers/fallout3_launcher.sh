@@ -4,14 +4,19 @@
 
 ## Location of the executable:
 PROGDIR="Fallout 3"
+LAUNCH="Fallout3.exe"
+LAUNCHINIT="FalloutLauncher.exe"
 
 ## Location of the installer:
 INSTDIR="GOG/$PROGDIR"
 INSTNAME='setup_fallout_3_*.exe'
 
+## Source Utility functions
+my_dir="$(dirname "$0")"
+. "$my_dir/_launcher_functions.sh"
+
 ## Wine configuration:
 wineBits="64"
-## wineBits="32"
 ## Getting messy enough that I want it in it's own prefix:
 WINEPREFIX="$HOME/WineFallout3_$wineBits"
 WINEARCH="win$wineBits"
@@ -28,7 +33,7 @@ DORSYNC="yes"
 ## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.png"
 
-## Notes:
+## Notes shown before program is executed
 PRERUN="
 WineHQ Platinum
   https://appdb.winehq.org/objectManager.php?sClass=version&iId=37374
@@ -38,26 +43,6 @@ WineHQ Platinum
   Significant problems on low-spec computer - crashes during loading screen
   on start of new game. Integrated video issues? Drivers?
 "
-
-
-my_dir="$(dirname "$0")"
-. "$my_dir/_launcher_functions.sh"
-
-## Run the configuration script the first time, then use the
-## direct launcher:
-confSet="$GAMEDIR/$PROGDIR/vcfConfRun.txt"
-
-if [[ -s "$confSet" ]]; then
-    LAUNCH="Fallout3.exe"
-    msg "$FgBlue" "
-Launching primary game executable, $LAUNCH
-If you wish to run the setup/configuration launcher, delete this file:
-  rm '$confSet'
-"
-else
-    LAUNCH="FalloutLauncher.exe"
-    echo "Configuration set on $(date)" > "$confSet"
-fi
 
 find_and_run_executable "$@"
 

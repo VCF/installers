@@ -2,7 +2,8 @@
 
 ## Location of the executable:
 PROGDIR="Fallout New Vegas"
-LAUNCH="FalloutNVLauncher.exe"
+LAUNCH="FalloutNV.exe"
+LAUNCHINIT="FalloutNVLauncher.exe"
 
 ## Location of the installer on your file system:
 INSTDIR="GOG/$PROGDIR"

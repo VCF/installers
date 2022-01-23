@@ -41,6 +41,7 @@ it will look for the following parameters:
   * LAUNCHARGS  : Optional arguments to pass to the executable
   * LAUNCHENV   : Optional environment settings to preceed executable
   * PROGSUBDIR  : Optional subdirectory. Used to set initial path of run
+  * LAUNCHINIT  : Optional initial launcher, used on first run only
 
 If the file specified by \$LAUNCH is found:
 
@@ -243,6 +244,9 @@ winetricks - Re-run winetricks installation"
                $fileCol'$BckFolder'$(ansiEnd)
 "
     fi
+    if [[ -n "$LAUNCHINIT" ]]; then
+        msg "$FgCyan" "  It can use an initial setup program"
+    fi
     funcSet=$(type -t INSTFUNCTION)
     if [[ "$funcSet" == "function" ]]; then
         helpTxt="$helpTxt
@@ -351,6 +355,33 @@ function determineExecutable {
         EXECUTABLE="$GAMEDIR/$PROGDIR"
         ## Add the subdirectory if needed:
         [[ -z "$PROGSUBDIR" ]] || EXECUTABLE="$EXECUTABLE/$PROGSUBDIR"
+        if [[ -n "$LAUNCHINIT" ]]; then
+            # There's an initial launch program, generally used for
+            # setup. Track first run with a file
+            confSet="$GAMEDIR/$PROGDIR/vcfConfRun.txt"
+            if [[ -s "$confSet" ]]; then
+                # The init program has been run already, use the
+                # 'primary' executable
+                msg "$FgBlue" "
+Launching primary game executable:
+   $LAUNCH
+If you wish to run the setup/configuration launcher again, delete this file:
+  rm '$confSet'
+"
+            else
+                # Run the initial launcher
+                LAUNCH="$LAUNCHINIT"
+                # Note first run in the temp file
+                echo "Configuration set on $(date)" > "$confSet"
+                msg "$FgBlue" "
+Launching initial program, probably for configuration:
+   $LAUNCH
+It is possible that the program may end abruptly following this;
+If so, please just re-run
+  (this is due to the parent shell exiting after init program completes)
+"
+            fi
+        fi
         EXECUTABLE="$EXECUTABLE/$LAUNCH"
         ## If it's not there, leave
         [[ -s "$EXECUTABLE" ]] || return

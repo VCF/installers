@@ -457,7 +457,7 @@ function runExecutable {
     msg "$FgGreen" "  Running $EXECUTABLE"
     [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
 
-    doLaunch="./$LAUNCH"
+    doLaunch="./\"$LAUNCH\""
     ## Don't use absolute paths for system programs:
     determineSuffix "$INSTNAME"
     [[ -n "$INSTREPO" || $sfx == "deb" ]] && doLaunch="$EXECUTABLE"

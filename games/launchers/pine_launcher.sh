@@ -31,7 +31,7 @@ INSTICON="$PROGDIR.png"
 #"
 
 ## Location of the programs save files / config:
-## INSTSAVEDIR="$HOME/.config/foobar"
+INSTSAVEDIR="$HOME/.config/unity3d/Twirlbound/Pine"
 ## Flag to use if backup should use rsync rather than tar/gzip:
 ## DORSYNC="yes"
 ## Flag that prevents backups if set, and shows the provided message:

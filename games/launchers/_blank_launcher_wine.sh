@@ -45,19 +45,24 @@ INSTICON="$PROGDIR.png"
 ## Flag that prevents backups if set, and shows the provided message:
 ## NOAUTOBACK="Backups take too long to run"
 
+## Custom function to run each time just BEFORE running the program:
+#function RUNFUNCTION {
+#  echo "For example, configuring the system in some way"
+#}
+## Custom function to run AFTER program executes
+#function ENDFUNCTION {
+#    ## eg clean up system after program has tinkered with it
+#}
 ## Custom function to run after installation:
 #function INSTFUNCTION {
 #  echo "For example, properly setting executable bits"
 #  addDLC 'foobar_pro_DLC_pack_*.exe'
 #}
-## Custom function to run each time just before running the program:
-#function RUNFUNCTION {
-#  echo "For example, configuring the system in some way"
-#}
 
 ## Notes shown before program is executed
-#PRERUN="
-#If the program asks to choose a flavor, please select 'Tepid Mango'
-#"
+PRERUN="
+Wine <Gold,Platinum,etc>
+  <-- link to WineHQ, ProtonDB, PlayOnLinux, etc -->
+"
 
 find_and_run_executable "$@"

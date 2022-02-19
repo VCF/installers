@@ -17,23 +17,8 @@ INSTICON="$PROGDIR.png"
 
 ## Location of the programs save files / config:
 INSTSAVEDIR="$HOME/.t-engine/4.0"
-
-function addDLC {
-    DLCFILE="$1"
-    OLDINST="$INSTNAME"
-    INSTNAME="$DLCFILE"
-    installer=""
-    findInstaller
-    if [[ -z "$installer" ]]; then
-        msg "$FgYellow" "  DLC absent: $INSTNAME"
-    else
-        msg "$FgBlue" "  Installing DLC:
-    $installer
-"
-        installShell
-    fi
-    INSTNAME="$OLDINST"
-}
+## Flag to use if backup should use rsync rather than tar/gzip:
+DORSYNC="yes"
 
 ## Custom function to run after installation:
 function INSTFUNCTION {

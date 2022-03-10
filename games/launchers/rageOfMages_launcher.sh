@@ -2,6 +2,9 @@
 
 ## Location of the executable:
 PROGDIR="Rage of Mages"
+LAUNCH="rom.exe"
+## Arguments to pass to the executable when running:
+LAUNCHARGS="-1024"
 
 ## Location of the installer on your file system:
 INSTDIR="GOG/$PROGDIR"

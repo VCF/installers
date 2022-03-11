@@ -1,16 +1,26 @@
 #!/bin/bash
 
 ## Location of the executable:
-PROGDIR="Bioshock"
-LAUNCH="whatActuallyRunsTheProgram.exe"
+PROGDIR="Bioshock Installer"
+LAUNCHINIT="BSAutoRun.exe"
+INITBACKGROUND="TRUE" # installer needs to be backgrounded.
+LAUNCH="BSAutoRun.exe"
 ## Arguments to pass to the executable when running:
-LAUNCHARGS="-nointro -defaultres"
+## LAUNCHARGS="-nointro -defaultres"
 ## Subdirectory in the program folder to change to before running:
 ## PROGSUBDIR="bin"
 
 ## Location of the installer on your file system:
-INSTDIR="GOG/$PROGDIR"
-INSTNAME='setup_bioshock_remastered_*.exe'
+INSTDIR="Humble Indie Bundle/Bioshock"
+INSTNAME='BioShock_windows_*.rar'
+#INSTNAME='setup_bioshock_remastered_*.exe'
+
+###### Unpacking optionos
+## Parameters for archives (zip/gz):
+## Define a parent directory for unpacking archives:
+## UNPACKDIR="$PROGDIR"
+## Rename the default install directory to something else:
+INSTRENAME='DRM_Free_Installer/'$PROGDIR
 
 ## Source Utility functions
 my_dir="$(dirname "$0")"
@@ -24,7 +34,7 @@ WINEPREFIX="$HOME/Wine$wineBits"
 ## Set the architecture being used for Wine:
 WINEARCH="win$wineBits"
 ## The location of the installed program in drive_c:
-WINETARGET="GOG Games/BioShock Remastered"
+## WINETARGET="GOG Games/BioShock Remastered"
 ## Any winetricks that might be needed:
 ## INSTTRICKS="d3dx9_43 wmp9 wmp10"
 ## Switches passed to Wine when running application
@@ -45,10 +55,6 @@ INSTICON="$PROGDIR.png"
 ## Flag that prevents backups if set, and shows the provided message:
 ## NOAUTOBACK="Backups take too long to run"
 
-## Custom function to run after installation:
-#function INSTFUNCTION {
-#  echo "For example, properly setting executable bits"
-#}
 ## Custom function to run each time just before running the program:
 #function RUNFUNCTION {
 #  echo "For example, configuring the system in some way"

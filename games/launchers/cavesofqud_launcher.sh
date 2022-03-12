@@ -3,12 +3,16 @@
 ## Location of the executable:
 PROGDIR="Caves of Qud"
 LAUNCH="start.sh"
+
 ## Location of the installer:
 INSTDIR="GOG/Caves of Qud"
 INSTNAME='caves_of_qud_*.sh'
-## Installation post-processing:
-INSTSAVEDIR="$HOME/.config/unity3d/Freehold Games/CavesOfQud/Saves"
-NOAUTOBACK="Backup eventually takes a long time"
+
+## Location of the programs save files / config:
+INSTSAVEDIR="$HOME/.config/unity3d/Freehold Games/CavesOfQud"
+## Flag to use if backup should use rsync rather than tar/gzip:
+DORSYNC="yes"
+## Filename of launcher icon (looks in default folders):
 INSTICON="$PROGDIR.jpg"
 ## Notes:
 

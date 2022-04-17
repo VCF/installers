@@ -14,6 +14,6 @@ find "$srcDir" -mtime -1 |\
     egrep -v '(Desktop|Programs|icons|GameFiles|zeitgeist|generalUtilities)' |\
     egrep -v '(installers|pulse|Downloads|Trash|QMapShack|dolphin)' |\
     egrep -v '\/(mime)\/' |\
-    egrep -v '\/(wine-extension|gvfs-)' |\
+    egrep -v '\/(wine-extension|gvfs-|\.wine\/)' |\
     egrep -v '(RecentDocuments|kactivitymanagerd|libreoffice)' |\
     less -S

@@ -46,8 +46,8 @@ INSTICON="$PROGDIR.png"
 ## NOAUTOBACK="Backups take too long to run"
 
 ## Custom function to run each time just BEFORE running the program:
-function RUNFUNCTION {
-}
+#function RUNFUNCTION {
+#}
 ## Custom function to run AFTER program executes
 #function ENDFUNCTION {
 #    ## eg clean up system after program has tinkered with it

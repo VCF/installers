@@ -373,12 +373,15 @@ If you wish to run the setup/configuration launcher again, delete this file:
                 LAUNCH="$LAUNCHINIT"
                 # Note first run in the temp file
                 echo "Configuration set on $(date)" > "$confSet"
+                
                 msg "$FgBlue" "
 Launching initial program, probably for configuration:
    $LAUNCH
 It is possible that the program may end abruptly following this;
 If so, please just re-run
   (this is due to the parent shell exiting after init program completes)
+If you wish to run the setup/configuration launcher again, delete this file:
+  rm '$confSet'
 "
             fi
         fi
@@ -386,6 +389,9 @@ If so, please just re-run
         ## If it's not there, leave
         [[ -s "$EXECUTABLE" ]] || return
         extSfx="${LAUNCH##*.}"
+        if [[ -n "$INITBACKGROUND" ]]; then
+            ISBACKGROUND="TRUE"
+        fi
     fi
     isInstalled="yes"
 }
@@ -479,6 +485,13 @@ function runExecutable {
         LogNote=" LogFile:\n  less -S \"$LOG\""
         msg "$FgBlue" "       Log File: $LOG"
     fi
+
+    if [[ -n "$ISBACKGROUND" ]]; then
+        ## Running program in background
+        ## This may be needed if the program spawns a subprocess
+        msg "$FgBlue" "      Launching in background"
+        doLaunch="$doLaunch &"
+    fi
     
     set_title "Run $PROGDIR";
     eval $doLaunch
@@ -514,36 +527,40 @@ function runWine {
     in $(pwd)"
     [[ -n "$LAUNCHARGS" ]] && msg "$FgGreen" "    Arguments: $LAUNCHARGS"
     set_title "Wine $PROGDIR";
+    doLaunch="wine"
     WL="$LAUNCH"
     if [[ -n "$WINEARGS" ]]; then
         msg "$FgGreen" "    Wine Args: $WINEARGS"
         WL="$WL $WINEARGS"
     fi
-    LogNote=""
-    if [[ -z "$NOREDIRECT" ]]; then
-        ## Capture log to file
-
-        ## OMG. Some programs are confounded by an empty
-        ## parameter. That is, it is not always safe to include
-        ## "$LAUNCHARGS" if $LAUNCHARGS is empty, because the empty ""
-        ## will upset the executable (eg Cogmind). So I need another
-        ## ifelse block
-        if [[ -n "$LAUNCHARGS" ]]; then
-            WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
-                    wine "$WL" "$LAUNCHARGS" &>> "$LOG"
-        else
-            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$WL" &>> "$LOG"
-        fi
-        LogNote=" LogFile:\n  less -S \"$LOG\""
-    else
-        ## Log to STDOUT
-        if [[ -n "$LAUNCHARGS" ]]; then
-            WINEARCH="$wineArch" WINEPREFIX="$winePfx" \
-                    wine "$WL" "$LAUNCHARGS"
-        else
-            WINEARCH="$wineArch" WINEPREFIX="$winePfx" wine "$WL"
-        fi
+    doLaunch="$doLaunch \"$WL\""
+    
+    if [[ -n "$LAUNCHARGS" ]]; then
+        doLaunch="$doLaunch \"$LAUNCHARGS\""
+        msg "$FgGreen" "     App Args: $LAUNCHARGS"
     fi
+
+    LogNote=""
+    if [[ -n "$ISBACKGROUND" ]]; then
+        ## Running program in background
+        ## This may be needed if the program spawns a subprocess
+        msg "$FgBlue" "      Launching in background. DO NOT Ctrl-C the parent shell!"
+        doLaunch="nohup $doLaunch >/dev/null 2>&1 </dev/null &"
+    elif [[ -z "$NOREDIRECT" ]]; then
+        ## Capture log to file
+        doLaunch="$doLaunch &>> \"$LOG\""
+        LogNote=" LogFile:\n  less -S \"$LOG\""
+
+    fi
+    
+    doLaunch="WINEARCH=\"$wineArch\" WINEPREFIX=\"$winePfx\" $doLaunch"
+
+    echo "## Full Wine command string:" >> "$LOG"
+    echo "##   $doLaunch" >> "$LOG"
+    echo "#################################################" >> "$LOG"
+
+    eval $doLaunch
+    
     msg "$FgCyan" "  Launcher finished.$LogNote\n"
 }
 
@@ -690,6 +707,9 @@ Launcher not found
     elif [[ $sfx == "zip" ]]; then
         ## zip archive
         installZip
+    elif [[ $sfx == "rar" ]]; then
+        ## zip archive
+        installRar
     elif [[ $sfx == "appimage" ]]; then
         ## zip archive
         installAppImage
@@ -1105,6 +1125,18 @@ Preparing to extract:
 "
     ## Extracting Bzip: https://superuser.com/a/480951
     cmd="unzip \"$installer\""
+    ## Command literal with eval: https://stackoverflow.com/a/2355242
+    eval "$cmd"
+}
+
+function installRar {
+    TRIEDINSTALL="RAR Archive: $installer"
+    msg "$FgMagenta" "
+Preparing to extract:
+  $installer
+"
+    ## Extracting RAR: https://unix.stackexchange.com/a/246537
+    cmd="unrar x \"$installer\""
     ## Command literal with eval: https://stackoverflow.com/a/2355242
     eval "$cmd"
 }

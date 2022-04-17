@@ -58,6 +58,20 @@ user_pref("media.webaudio.enabled", true);
 //
 user_pref("browser.newtabpage.activity-stream.topSitesRows", 4);
 
+// ****************************************************************8
+// Trying to fully turn off autoplay
+// https://sites.google.com/view/a-bit-better-privacy/stop-firefox-video-autoplay
+user_pref("dom.media.autoplay.autoplay-policy-api", true);
+user_pref("media.autoplay.allow-extension-background-pages", false);
+user_pref("media.autoplay.allow-muted", false);
+user_pref("media.autoplay.blackList-override-default", true);
+user_pref("media.autoplay.block-event.enabled", true);
+user_pref("media.autoplay.block-webaudio", true);
+user_pref("media.autoplay.default", 5);
+user_pref("media.autoplay.enabled", false);
+user_pref("media.block-autoplay-until-in-foreground", false);
+user_pref("media.geckoview.autoplay.request", true);
+
 
 // ****************************************************************8
 // Plugins

@@ -80,6 +80,10 @@ Need most recent version of Visual C++ from Microsoft:
     fi
     
     cd "$hereDir"
+
+    ## Install patches
+    addDLC 'patch_everspacetm_2_0.8.25294_(54783)_to_0.8.25327_(54895).exe'
+    addDLC 'patch_everspacetm_2_0.8.25327_(54895)_to_0.8.25412_(55045).exe'
 }
 
 ## Custom function to run each time just before running the program:

@@ -24,7 +24,7 @@ INSTICON="$PROGDIR.png"
 ## Define a parent directory for unpacking archives:
 ## UNPACKDIR="$PROGDIR"
 ## Rename the default install directory to something else:
-## INSTRENAME='NameAfterUnpacking/'$PROGDIR
+## INSTRENAME='NameAfterUnpacking/'"$PROGDIR"
 
 ## Specify any required APT packages:
 ## APTPACKAGES='libsdl2-mixer-2.0-0'

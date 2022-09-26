@@ -2,15 +2,19 @@
 
 ## Location of the executable:
 PROGDIR="Minecraft"
-LAUNCH="minecraft-launcher"
-## Location of the installer:
+LAUNCH="/usr/bin/minecraft-launcher"
+
+## Location of the installer on your file system:
 INSTDIR="Minecraft"
-INSTNAME="Minecraft-*.deb"
+INSTNAME="Minecraft.deb"
+
 ## JRE 8 needed:
-APTPACKAGES="openjdk-8-jre"
-INSTHELP="To update, visit: https://minecraft.net/download
-  Save with versioned filename
-"
+#APTPACKAGES="openjdk-8-jre"
+#INSTHELP="To update, visit: https://minecraft.net/download
+##"
+
+
+
 ## Installation post-processing:
 INSTSAVEDIR="$HOME/.minecraft/saves"
 INSTICON="minecraft_logo1.png"

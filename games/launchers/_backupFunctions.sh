@@ -109,7 +109,6 @@ function backupGranularity {
   Recognized values: second, minute, hour, day, weekday, month
   Time granularity kept at: $nicePattern ($datePattern)"
     fi
-    echo "$nicePattern"
 }
 
 function allBackups {

@@ -70,14 +70,77 @@ function backupSubfolder {
     echo "$rv"
 }
 
+datePattern="%Y-%m-%d"
+findPattern="????-??-??"
+nicePattern="Day"
+function backupGranularity {
+    ## Set the time interval to distinguish backups
+    ## Lower case: https://stackoverflow.com/a/2264537
+    req=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+    if [[ -z $req || "$req" == "" ]]; then
+        ## No value passed
+        :
+    elif [[ "$req" == "second" || $req == "sec" ]]; then
+        datePattern="%Y-%m-%d_%H%M%S"
+        findPattern="????-??-??_??????"
+        nicePattern="Second"
+    elif [[ "$req" == "minute" || $req == "min" ]]; then
+        datePattern="%Y-%m-%d_%H%M"
+        findPattern="????-??-??_????"
+        nicePattern="Minute"
+    elif [[ "$req" == "hour" || $req == "hr" ]]; then
+        datePattern="%Y-%m-%d_%H"
+        findPattern="????-??-??_??"
+        nicePattern="Hour"
+    elif [[ "$req" == "day" ]]; then
+        datePattern="%Y-%m-%d"
+        findPattern="????-??-??"
+        nicePattern="Day"
+    elif [[ "$req" == "dayofweek" || "$req" == "weekday" || $req == "dow" ]]; then
+        datePattern="%Y-%m-%d_%a"
+        findPattern="????-??-??_???"
+        nicePattern="Day of Week"
+    elif [[ "$req" == "month" ]]; then
+        datePattern="%Y-%m"
+        findPattern="????-??"
+        nicePattern="Month"
+    else
+        msg "$FgYellow" "Unrecognized time granularity request: \"$req\"
+  Recognized values: second, minute, hour, day, weekday, month
+  Time granularity kept at: $nicePattern ($datePattern)"
+    fi
+    echo "$nicePattern"
+}
+
 function allBackups {
     ## Find all backups currently held
     sf=$(backupSubfolder "$1" "$2")
-    ab=$(ls -1t "$sf"/????-??-??.tar.gz 2> /dev/null)
+    ab=$(ls -1t "$sf"/${findPattern}.tar.gz 2> /dev/null)
     ## Text block to array: https://stackoverflow.com/a/5257398
     IFS=$'\n'
     AllBackups=($ab)
     unset IFS
+    # echo "$ab"
+}
+
+function trimBackups {
+    ## Remove all but the `n` most recent backups from a folder
+    allBackups "$1" "$2"
+    req="$3"
+    if [[ "$req" =~ ^[0-9]{1,}$ ]]; then
+        for f in "${AllBackups[@]:$req}"
+        do
+            rm "$f"
+            if [[ -f "$f" ]]; then
+                msg "$FgRed;$BgYellow" "ERROR - failed to remove old file:
+  $f"
+            else
+                msg "$FgWhite" "  Old save deleted: $f"
+            fi
+        done
+    else
+        msg "$FgYellow" "Trim request '$req' was not understood"
+    fi
 }
 
 function mostRecentBackup {
@@ -135,9 +198,14 @@ echo \"Restored directory should be at: \$dest\"
         ## There is at least one backup. Is it more recent than the folder?
         bDt=$(lastModified "$mrb")
         fDt=$(lastModified "$SRC")
-        [[ "$bDt" > "$fDt" ]] && return # Do nothing if archive is fresh
+        if [[ "$bDt" > "$fDt" ]]; then
+            # Do nothing if archive is fresh
+            short=$(basename "$mrb")
+            msg "$FgGreen" "  $short exists and is up-to-date for $SRC"
+            return 
+        fi
     fi
-    tgz=$(date +"%Y-%m-%d.tar.gz")
+    tgz=$(date +"${datePattern}.tar.gz")
     ## Set up to avoid full directory path in tar file:
     Pwd=$(pwd)
     SrcPar=$(dirname "$SRC")

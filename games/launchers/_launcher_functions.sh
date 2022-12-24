@@ -163,7 +163,7 @@ are:
 
 ## script folder: https://stackoverflow.com/a/246128
 myLaunchDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-. "$myLaunchDir/../../generalUtilities/_util_functions.sh"
+. "$myLaunchDir/_util_functions.sh"
 
 fileCol=$(ansiStart "$FgMagenta")
 
@@ -202,7 +202,7 @@ settings are to your satisfaction:
 
 loadPrefs
 
-. "$myLaunchDir/../../generalUtilities/_backupFunctions.sh"
+. "$myLaunchDir/_backupFunctions.sh"
 
 # Testing the suffix of a file:
 # https://stackoverflow.com/a/965072

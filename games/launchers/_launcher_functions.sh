@@ -42,6 +42,7 @@ it will look for the following parameters:
   * LAUNCHENV   : Optional environment settings to preceed executable
   * PROGSUBDIR  : Optional subdirectory. Used to set initial path of run
   * LAUNCHINIT  : Optional initial launcher, used on first run only
+  * STEAMID     : Numeric Steam asset ID for Steam executables
 
 If the file specified by \$LAUNCH is found:
 
@@ -228,6 +229,10 @@ winetricks - Re-run winetricks installation"
             msg "$FgCyan" "    ... from a git repository"
          fi
     fi
+    if [[ -n "$STEAMID" ]]; then
+        txt="It can launch Steam asset $STEAMID ($PROGDIR)"
+        msg "$FgCyan" "  $txt"
+    fi
     unBit="The save directory is unknown, make sure your save files are ok!"
     if [[ -n "$INSTSAVEDIR" && "$INSTSAVEDIR" != 'NONE' ]]; then
         msg "$FgCyan" "  It will normalize save file location for you"
@@ -315,6 +320,11 @@ You requested re-installation of wine tricks, but none seem to be defined?
         err "  $1  "
         launcherHelp; return
     fi
+
+    if [[ -n "$STEAMID" ]]; then
+        runSteam
+        return
+    fi
     
     if [[ ! -d "$GAMEDIR" ]]; then
         msg "$FgRed" "
@@ -394,6 +404,30 @@ If you wish to run the setup/configuration launcher again, delete this file:
         fi
     fi
     isInstalled="yes"
+}
+
+function runSteam {
+    if [[ -z "$STEAMID" ]]; then
+        msg "$FgRed" "
+Variable STEAMID must be set to execute a steam game.
+"
+        exit
+    fi
+    
+    ## Show any pre-run messages:
+    [[ -z "$PRERUN" ]] || msg "$FgMagenta" "$PRERUN"
+
+    msg "$FgGreen" "
+  Steam launch of asset $STEAMID ($PROGDIR)
+"
+    steam steam://rungameid/$STEAMID
+    
+    customEndFunction
+    ## Show any post-run messages:
+    [[ -z "$POSTRUN" ]] || msg "$FgMagenta" "$POSTRUN"
+    
+    countdown 30
+    exit
 }
 
 function runGame {

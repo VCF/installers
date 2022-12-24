@@ -22,6 +22,8 @@ fi
 backupGranularity "second"
 
 ## Split string on newlines: https://stackoverflow.com/a/19772067
+msg "$FgCyan" "Backing up worlds before game run ..."
+lnkTxt="Link to this worlds save game folder"
 IFS=$'\n' read -rd '' -a worldDirs <<< "$(ls -1 "$srcDir")"
 for wd in "${worldDirs[@]}"
 do
@@ -31,12 +33,16 @@ do
     IFS=$'\n' read -rd '' -a gameDirs <<< "$(ls -1 "$sw")"
     for gd in "${gameDirs[@]}"
     do
-        [[ $vb != "" ]] && echo "  Game \"$gd\""
+        msg "$FgCyan" "  $wd -- $gd"
         swg="$sw/$gd"           # Game directory in saves
-        ## Archive this world-game, if needed
-        subfolder="7days/$wd"
-        archiveFolder "$swg" "$subfolder"
-        ## Keep only the three most recent backups for each world
-        trimBackups "$swg" "$subfolder" 3
+        subfolder="7days/$gd__$wd"
+        archiveFolder "$swg" "$subfolder" # Archive this world-game, if needed
+        trimBackups "$swg" "$subfolder" 3 # Keep only 3 most recent backups
+        ## Make a symlink back to save folder
+        sfpath=$(backupSubfolder "$swg" "$subfolder")
+        lpath="$sfpath/$lnkTxt"
+        if [[ ! -l "$lpath" ]]; then
+            ln -s "$swg" "$lpath"
+        fi
     done
 done

@@ -1,8 +1,14 @@
 #!/bin/bash
 
+PROGDIR="7 Days to Die"
+STEAMID="251570"
+
 ## Source Utility functions
 my_dir="$(dirname "$0")"
 . "$my_dir/_launcher_functions.sh"
+
+## Filename of launcher icon (looks in default folders):
+INSTICON="$PROGDIR.png"
 
 # The first argument is where the backup files should be saved
 #   It defaults to '7daystodie_backups' in your home folder
@@ -20,6 +26,15 @@ fi
 
 
 backupGranularity "second"
+
+PRERUN="
+7 Days to Die can irreversibly corrupt your save data if the application
+crashes (about once every 100 hours in the author's experience) or if you
+lose power. Your save games will be backed up before each launch to allow
+recovery from such events, at least to the state before you started the
+game. For every World/Game combination, at most 3 saves will be kept, stored
+as gzipped tarballs.
+"
 
 ## Split string on newlines: https://stackoverflow.com/a/19772067
 msg "$FgCyan" "Backing up worlds before game run ..."
@@ -41,8 +56,24 @@ do
         ## Make a symlink back to save folder
         sfpath=$(backupSubfolder "$swg" "$subfolder")
         lpath="$sfpath/$lnkTxt"
-        if [[ ! -l "$lpath" ]]; then
+        if [[ ! -L "$lpath" ]]; then
             ln -s "$swg" "$lpath"
         fi
     done
 done
+echo ""
+
+POSTRUN="
+Your game was backed up just before you started. When you run the launcher
+again, it will make a new backup of the current game state. If you would
+like to make another backup now, run the launcher with an additional
+argument 'help'.
+
+The game is NOT backed up by default after running because there's a non-trivial
+chance that the save has been corrupted. :-(
+"
+
+
+desktopIcon
+find_and_run_executable "$@"
+

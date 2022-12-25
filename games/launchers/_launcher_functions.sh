@@ -1646,9 +1646,10 @@ Comment=Launch $PROGDIR
 Exec=$Exec
 Type=Application
 #Terminal=true
-Path=$GAMEDIR/$PROGDIR
 Icon=$iPath
 " > "$dt"
+    ## PROGDIR is just descriptive for Steam games, does not actu
+    [[ -z "$STEAMID" ]] && echo "Path=$GAMEDIR/$PROGDIR" >> "$dt"
     chmod +x "$dt"
     chmod g-w "$dt"
     msg "$FgMagenta" "Desktop launcher created:\n  $dt"

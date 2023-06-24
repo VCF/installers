@@ -18,7 +18,7 @@ WINEPREFIX="$HOME/Wine$wineBits"
 ## Set the architecture being used for Wine:
 WINEARCH="win$wineBits"
 ## The location of the installed program in drive_c:
-WINETARGET="Program Files/GOG.com/Silent Storm GOLD"
+WINETARGET="GOG Games/Silent Storm Gold"
 
 INSTSAVEDIR="$PROGSUBDIR/save"
 ## Flag to use if backup should use rsync rather than tar/gzip:

@@ -20,7 +20,7 @@ my_dir="$(dirname "$0")"
 INSTICON="$PROGDIR.png"
 
 ## Location of the programs save files / config:
-INSTSAVEDIR="$GAMEDIR/$PROGDIR/$PROGSUBDIR/$LAUNCH"
+INSTSAVEDIR="$GAMEDIR/$PROGDIR/$PROGSUBDIR/saves"
 
 ## Custom function to run after installation:
 function INSTFUNCTION {

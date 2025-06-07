@@ -3,9 +3,10 @@
 ## Location of the executable:
 PROGDIR="Cataclysm DDA"
 LAUNCH="cataclysm-launcher"
+LAUNCHCHK="cataclysm-tiles"
 ## Location of the installer:
 INSTDIR="OpenSource/$PROGDIR"
-INSTNAME='cdda-linux-tiles-x64-*.tar.gz'
+INSTNAME='cdda-linux-with-graphics-and-sounds-x64-*.tar.gz'
 ## Installation post-processing:
 INSTICON="$PROGDIR.jpg"
 INSTRENAME='cataclysmdda-*/'"$PROGDIR"

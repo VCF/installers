@@ -3,6 +3,8 @@
 ## Location of the executable:
 PROGDIR="The name of the game"
 STEAMID="The integer number Steam associates with the game"
+## We'll trust steam to check if the application is already running
+LAUNCHCHK="SteamShouldFigureItOut"
 
 ## Arguments to pass to the executable when running:
 ## LAUNCHARGS="-nogui -res=640x320"

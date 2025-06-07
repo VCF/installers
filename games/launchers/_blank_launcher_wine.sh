@@ -3,6 +3,8 @@
 ## Location of the executable:
 PROGDIR="Name of Directory After Installation"
 LAUNCH="whatActuallyRunsTheProgram.exe"
+## If the program ultimate runs as a different executable, list here:
+## LAUNCHCHK="somethingelse.exe"
 ## Arguments to pass to the executable when running:
 ## LAUNCHARGS="-nogui -res=640x320"
 ## Subdirectory in the program folder to change to before running:

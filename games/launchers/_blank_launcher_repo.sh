@@ -3,6 +3,8 @@
 ## Not really a directory, but a name used by some folders:
 PROGDIR="A name you want associated with the program"
 LAUNCH="whatActuallyRunsTheProgram"
+## If the program ultimate runs as a different executable, list here:
+## LAUNCHCHK="somethingelse.sh"
 ## Arguments to pass to the executable when running:
 ## LAUNCHARGS="-nogui -res=640x320"
 ## Subdirectory in the program folder to change to before running:

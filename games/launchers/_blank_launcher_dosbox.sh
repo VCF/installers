@@ -7,6 +7,8 @@ DOSBOX='-conf ../foo.conf -conf ../bar.conf -fullscreen -noconsole -c exit'
 ## Just include an executable below. It won't be run, but this script
 ## will check for it to see if installation has already occured:
 LAUNCH="someRandomExecInFolder.exe"
+## If the program ultimate runs as a different executable, list here:
+## LAUNCHCHK="somethingelse.exe"
 ## Optional subdirectory of above file. Note that DosBox will also
 ## launch from that folder (in case it also has needed DLLs):
 ## PROGSUBDIR="bin"

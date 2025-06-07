@@ -166,12 +166,19 @@ function archiveFolder {
         echo "#!/bin/bash
 ## Function to restore a tar.gz backup to the location it came from
 tgz=\"\$1\"
-dest=\"$sf\"
+dest=\"$SRC\"
 par=\$(dirname \"\$dest\")
 if [[ -z \"\$tgz\" ]]; then
     echo \"Please pass the path to the tar.gz file as the first argument\"
     exit
 fi
+if [[ ! -s \"\$tgz\" ]]; then
+    echo \"The provided file does not appear to exist:
+    \$tgz
+\"
+    exit
+fi
+
 if [[ -d \"\$dest\" ]]; then
     ## If the target directory exists, move it to a renamed location (-BKUP)
     bkd=\"\$dest\"-BKUP
@@ -185,9 +192,21 @@ fi
 ## Create the partent directory if absent
 [[ ! -d \"\$par\" ]] && mkdir \"\$par\"
 
-gunzip -c \"\$tgz\" | tar -xvf -C \"\$par\" -
+echo \"
+  Extracting: \$tgz
+          To: \$par
+\"
+tar -C \"\$par\" -xvfz \"\$tgz\" 
 
-echo \"Restored directory should be at: \$dest\"
+if [[ ! -d \"\$dest\" ]]; then
+    echo \"ERROR? Expected unpacked directory not found:
+  \$dest
+\"
+else
+    echo \"Files unpacked at:
+  \$dest
+\"
+fi    
 
 " > "$resScript"
         chmod 0775 "$resScript"

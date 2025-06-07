@@ -143,6 +143,11 @@ Additional options when the program itself is run:
   * PRERUN     : A message shown before running program
   * POSTRUN    : A message shown after running
   * NOREDIRECT : Sets STDOUT to stream to terminal rather than \$LOGFILE
+  * LAUNCHCHK  : The launcher will by default check if the program is already
+                 running. By default it will grep for the value provided by
+                 \$LAUNCH. If a different program is ultimately run, pass it
+                 as LAUNCHCHK. Alternative, provide a nonsense value to ignore
+                 this check.
 
 The repository containing this library also holds several template
 installation scripts that have more details for each parameter. They
@@ -321,6 +326,20 @@ You requested re-installation of wine tricks, but none seem to be defined?
         launcherHelp; return
     fi
 
+    ## Is the game already running? If so, just return
+    findAlreadyRunning
+    if [[ "$ALREADYRUNNING" != "" ]]; then
+        msg "$FgRed;$BgYellow" "Not launching $PROGDIR:"
+        msg "$FgRed" "
+The following processes appear to represent an already-running copy:
+
+$ALREADYRUNNING
+
+"
+        countdown 15
+        return
+    fi
+
     if [[ -n "$STEAMID" ]]; then
         runSteam
         return
@@ -428,6 +447,16 @@ Variable STEAMID must be set to execute a steam game.
     
     countdown 30
     exit
+}
+
+function findAlreadyRunning {
+    ## Check to see if the process is already executed
+    ## The default presumption is that we want only a single process running
+    ALREADYRUNNING=""
+    ## If it's not explicitly set, use the default launch executable as the
+    ## process name we will check for
+    [[ -z "$LAUNCHCHK" ]] && LAUNCHCHK="$LAUNCH"
+    ALREADYRUNNING="$(ps -ef | grep "$LAUNCHCHK" | grep -v grep)"
 }
 
 function runGame {

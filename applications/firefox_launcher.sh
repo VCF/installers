@@ -3,6 +3,8 @@
 ## Location of the executable:
 PROGDIR="Firefox"
 LAUNCH="firefox"
+## If the program ultimate runs as a different executable, list here:
+LAUNCHCHK="firefox-bin"
 ## Location of the installer:
 INSTREPO="firefox"
 ## Installation post-processing:

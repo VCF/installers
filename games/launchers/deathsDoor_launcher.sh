@@ -26,7 +26,7 @@ WINETARGET="GOG Games/$PROGDIR"
 INSTICON="$PROGDIR.png"
 
 ## Location of the programs save files / config:
-INSTSAVEDIR="drive_c/users/tilfordc/AppData/LocalLow/Acid Nerve/DeathsDoor/SAVEDATA"
+INSTSAVEDIR="drive_c/users/$USER/AppData/LocalLow/Acid Nerve/DeathsDoor/SAVEDATA"
 ## Flag to use if backup should use rsync rather than tar/gzip:
 ## DORSYNC="yes"
 ## Flag that prevents backups if set, and shows the provided message:
